@@ -175,8 +175,9 @@ def run():
       tf.summary.image("Boundaries_pretrain", image, step=epoch)
 
 
-  border_callback_pretrain = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary_pretrain)
-  border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
+  
+  if(DATASET=='toy_Story' or DATASET=='toy_Story_ood'): 
+      border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
 
 
   training_generator = mixup.data_generator(x_train, 
