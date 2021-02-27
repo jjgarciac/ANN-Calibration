@@ -15,6 +15,8 @@ import time
 
 import data_loader, mixup
 from models import build_model
+import tensorflow as tf
+tf.executing_eagerly()
 
 def plot_to_image(figure):
   """Converts the matplotlib plot specified by 'figure' to a PNG image and
@@ -35,8 +37,8 @@ def plot_to_image(figure):
 def build_parser():
   parser = argparse.ArgumentParser(description='CLI Options',
                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("--dataset", default="test",
-                  help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, \
+  parser.add_argument("--dataset", default="iris",
+                  help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, sensorless_drive, segment,\
                           toy_Story, toy_Story_ood")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
@@ -85,9 +87,9 @@ def run():
                           test_noise=TEST_NOISE,
                           ood=OOD)
 
-  stratify = DATASET not in ["abalone"]
+  stratify = DATASET not in ["abalone", "segment"]
   
-  if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood']:
+  if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
     x = data_loader.prepare_inputs(data['features'])
     y = data['labels']
 
@@ -146,7 +148,7 @@ def run():
   
   def plot_boundary(epoch, logs):
     # Use the model to predict the values from the validation dataset.
-    xy = np.mgrid[-5:5:0.1, -5:5:0.1].reshape(2,-1).T
+    xy = np.mgrid[-5:5:0.1, -5:5:0.1].reshape(2,-1)
     hat_z = tf.nn.softmax(model(xy, training=False), axis=1)
     #scipy.special.softmax(hat_z, axis=1)
     c = np.sum(np.arange(hat_z.shape[1]+1)[1:]*hat_z, axis=1)
@@ -224,7 +226,7 @@ def run():
                                 callbacks=[
                                            tensorboard_callback,
                                            model_cp_callback,
-                                           border_callback
+                                           #border_callback
                                            ],
                                 )
   print(model.summary())
@@ -234,7 +236,7 @@ def run():
   
   metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(t))
   loss = model.evaluate(validation_generator, return_dict=True)
-  
+
   with open(metric_file, "w") as f:
     f.write(str(loss))
 

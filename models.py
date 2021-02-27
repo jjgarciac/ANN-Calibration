@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as tfk
 from tensorflow.keras.layers import Dense
 import math
+from metrics import *
 
 def gauss_pdf(x, name=None):
     return (1/tf.sqrt(2*math.pi))*tf.math.exp((-tf.pow(x, 2))/2)
@@ -56,9 +57,12 @@ def build_model(in_shape, out_shape, manifold_mixup=False):
 
   optimizer = tfk.optimizers.Adam()
   loss = tfk.losses.CategoricalCrossentropy(from_logits=True)
-  metrics = [tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32)]
+  metrics = [tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),CatgoricalTruePositives]
+             #ECE_metrics('ECE', num_of_bins=2),
+             #OE_metrics('OE', num_of_bins=10)]
   model.compile(optimizer=optimizer, 
                 loss=loss, 
                 metrics=metrics)
   
   return model
+
