@@ -57,12 +57,13 @@ def build_model(in_shape, out_shape, manifold_mixup=False):
 
   optimizer = tfk.optimizers.Adam()
   loss = tfk.losses.CategoricalCrossentropy(from_logits=True)
-  metrics = [tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),CatgoricalTruePositives]
-             #ECE_metrics('ECE', num_of_bins=2),
-             #OE_metrics('OE', num_of_bins=10)]
+  metrics = [
+             ECE_metrics(name='ECE', num_of_bins=10),OE_metrics(name='OE', num_of_bins=10),
+  tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),]
   model.compile(optimizer=optimizer, 
                 loss=loss, 
                 metrics=metrics)
   
   return model
 
+tf.metrics.serialize

@@ -5,7 +5,7 @@ import math
 import calibration as cal
 import numpy as np
 from tensorflow.python.keras.initializers import init_ops
-tf.executing_eagerly()
+
 
 class ECE_metrics(tfk.metrics.Metric):
     def __init__(self, name='ECE', num_of_bins=10):
@@ -20,11 +20,11 @@ class ECE_metrics(tfk.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.float32)
-        print('ypred:' + str(y_pred))
-        print('ygt:' + str(y_true))
+
         if not y_true.shape[0]:
             return
         self.n.assign_add(tf.cast(y_pred.shape[0], tf.float32))
+        print(self.n)
         probabilities = tf.nn.softmax(y_pred, axis=1)
         confs = tf.reduce_max(probabilities, axis=1)
         preds = tf.argmax(probabilities, axis=1)
@@ -33,24 +33,17 @@ class ECE_metrics(tfk.metrics.Metric):
         for (conf, pred, label) in zip(confs, preds, labels):
             bin_index = int(((conf * 100) // (100/self.num_of_bins)))
             if tf.equal(pred, label):
-                tf.compat.v1.scatter_add(self.acc_counts, bin_index, 1.0)
-            tf.compat.v1.scatter_add(self.counts, bin_index, 1.0)
-            tf.compat.v1.scatter_add(self.conf_counts, bin_index, tf.cast(conf, tf.float32))
+                self.acc_counts = tf.compat.v1.scatter_add(self.acc_counts, bin_index, 1.0)
+            self.counts = tf.compat.v1.scatter_add(self.counts, bin_index, 1.0)
+            self.conf_counts = tf.compat.v1.scatter_add(self.conf_counts, bin_index, tf.cast(conf, tf.float32))
 
     def result(self):
-
-        self.ECE.assign(0.0)
         if tf.equal(self.n, 0.0):
             return 0.0
         avg_acc = [float(0) if self.counts[i] == float(0) else self.acc_counts[i] / self.counts[i] for i in range(self.num_of_bins+1)]
         avg_conf = [float(0) if self.counts[i] == float(0) else self.conf_counts[i] / self.counts[i] for i in range(self.num_of_bins+1)]
-        for i in range(self.num_of_bins):
+        for i in range(self.num_of_bins+1):
             self.ECE.assign_add(tf.cast((self.counts[i] / self.n) * abs(avg_acc[i] - avg_conf[i]), tf.float32))
-        if tf.math.is_nan(self.ECE):
-            print(self.n)
-            print(avg_acc)
-            print(avg_conf)
-            return 0.0
         return self.ECE
 
     def reset_states(self):
@@ -75,7 +68,6 @@ class OE_metrics(tfk.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.float32)
-        print('ypred:' + str(y_pred))
         if not y_true.shape[0]:
             return
         self.n.assign_add(tf.cast(y_pred.shape[0], tf.float32))
@@ -89,9 +81,9 @@ class OE_metrics(tfk.metrics.Metric):
                 tf.compat.v1.scatter_add(self.acc_counts, bin_index, 1.0)
             tf.compat.v1.scatter_add(self.counts, bin_index, 1.0)
             tf.compat.v1.scatter_add(self.conf_counts, bin_index, tf.cast(conf, tf.float32))
+        return
 
     def result(self):
-        self.OE.assign(0.0)
         if tf.equal(self.n, 0.0):
             return 0.0
         avg_acc = [float(0) if self.counts[i] == float(0) else self.acc_counts[i] / self.counts[i] for i in
@@ -99,13 +91,8 @@ class OE_metrics(tfk.metrics.Metric):
         avg_conf = [float(0) if self.counts[i] == float(0) else self.conf_counts[i] / self.counts[i] for i in
                     range(self.num_of_bins+1)]
 
-        for i in range(self.num_of_bins):
+        for i in range(self.num_of_bins+1):
             self.OE.assign_add(tf.cast((self.counts[i] / self.n) * (avg_conf[i] * (tf.maximum(avg_conf[i] - avg_acc[i], 0))), tf.float32))
-        if tf.math.is_nan(self.OE):
-            print(self.n)
-            print(avg_acc)
-            print(avg_conf)
-            return 0.0
         return self.OE
 
     def reset_states(self):
@@ -167,8 +154,8 @@ def compute_calibration_metrics(outputs, labels, num_bins=10, device='cuda'):
         ECE += (counts[i] / n) * abs(avg_acc[i] - avg_conf[i])
         OE += (counts[i] / n) * (avg_conf[i] * (max(avg_conf[i] - avg_acc[i], 0)))
 
-    return ECE, #OE
-'''
+    return ECE, OE
+
 y_true = np.array([[0, 0, 1],
                    [0, 1, 0],
                    [0, 0, 1],
@@ -184,9 +171,9 @@ y_pred = np.array([[0.1, 0.9, 0.8],
                    [0.5, 0.7, 0.9],
                    [0.1, 0.1, 0.2],])
 y_true = tf.convert_to_tensor(y_true)
-ece, oe = compute_calibration_metrics(np.array(y_pred), np.array(y_true), num_bins=10, device='cuda')
-ECE = ECE_metrics(num_of_bins=10)
-OE = OE_metrics(num_of_bins=10)
+ece, oe = compute_calibration_metrics(np.array(y_pred), np.array(y_true), num_bins=3, device='cuda')
+ECE = ECE_metrics(num_of_bins=3)
+OE = OE_metrics(num_of_bins=3)
 ECE.update_state(y_true, y_pred)
 ece1 = ECE.result().numpy()
 OE.update_state(y_true, y_pred)
@@ -195,12 +182,11 @@ oe1 = OE.result().numpy()
 
 probs = tf.nn.softmax(y_pred, axis=1).numpy()
 labels = tf.argmax(y_true, axis=1).numpy()
-a = cal.get_ece(probs, labels, num_bins=10)
+a = cal.get_ece(probs, labels, num_bins=3)
 print(a)
 print(ece)
 print(ece1)
 print(oe1)
-'''
 
 
 class CatgoricalTruePositives(tf.keras.metrics.Metric):
