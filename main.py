@@ -1,15 +1,10 @@
 import argparse
 import os
 import numpy as np
-import tensorflow as tf
 import tensorflow.keras as k
 import matplotlib.pyplot as plt
-import seaborn as sns
 import io
 
-from datetime import datetime
-from tensorflow.keras.layers import Dense
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 import time
 
@@ -90,9 +85,9 @@ def run():
   stratify = DATASET not in ["abalone", "segment"]
   
   if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
+    print(DATASET)
     x = data_loader.prepare_inputs(data['features'])
     y = data['labels']
-
     x_train, x_test, y_train, y_test = train_test_split(x,
                                                         y,
                                                         train_size=TRAIN_TEST_RATIO,
@@ -105,7 +100,6 @@ def run():
       x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])
     y_train, y_test = data['y_train'], data['y_val']
 
-  
   # Generate validation split
   x_train, x_val, y_train, y_val = train_test_split(x_train,
                                                   y_train,
@@ -127,14 +121,13 @@ def run():
   tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
   file_writer_cm = tf.summary.create_file_writer(log_dir + '/cm')
 
-  checkpoint_filepath = os.path.join(gdrive_rpath, MODEL_NAME, '{}/ckpt'.format(t))
+  checkpoint_filepath = os.path.join(gdrive_rpath, MODEL_NAME, '{}/ckpt/'.format(t))
   if not os.path.exists(checkpoint_filepath):
     os.makedirs(checkpoint_filepath)
 
   model_path= os.path.join(gdrive_rpath, MODEL_NAME, '{}/model'.format(format(t)))
   if not os.path.exists(model_path):
     os.makedirs(model_path)
-
 
   model_cp_callback = tf.keras.callbacks.ModelCheckpoint(
                                                         filepath=checkpoint_filepath,
@@ -179,7 +172,6 @@ def run():
 
   border_callback_pretrain = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary_pretrain)
   border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
-
 
   training_generator = mixup.data_generator(x_train, 
                                             y_train,
@@ -229,13 +221,14 @@ def run():
                                            #border_callback
                                            ],
                                 )
+
   print(model.summary())
-  #model.load_weights(checkpoint_filepath)
-  #model.save(model_path)
+  model.load_weights(checkpoint_filepath)
+  model.save(model_path)
   print('Tensorboard callback directory: {}'.format(log_dir))
   
   metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(t))
-  loss = model.evaluate(validation_generator, return_dict=True)
+  loss = model.evaluate(test_generator, return_dict=True)
 
   with open(metric_file, "w") as f:
     f.write(str(loss))
