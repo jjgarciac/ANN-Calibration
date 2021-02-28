@@ -57,13 +57,19 @@ def build_model(in_shape, out_shape, manifold_mixup=False):
 
   optimizer = tfk.optimizers.Adam()
   loss = tfk.losses.CategoricalCrossentropy(from_logits=True)
-  metrics = [
-             ECE_metrics(name='ECE', num_of_bins=10),OE_metrics(name='OE', num_of_bins=10),
-  tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),]
+
+  import keras.backend as K
+
+  def mean_pred(y_true, y_pred):
+      a = compute_calibration_metrics(y_true, y_pred, num_bins=10, device='cuda')
+      return tf.convert_to_tensor(a)
+
+  metrics = [compute_calibration_metrics, ECE_metrics(name='ECE', num_of_bins=10),
+             OE_metrics(name='OE', num_of_bins=10),
+             tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),]
   model.compile(optimizer=optimizer, 
                 loss=loss, 
-                metrics=metrics)
+                metrics=metrics,
+                run_eagerly=True)
   
   return model
-
-tf.metrics.serialize
