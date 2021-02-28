@@ -34,7 +34,7 @@ def build_parser():
                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument("--dataset", default="segment",
                   help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, sensorless_drive, segment,\
-                          toy_Story, toy_Story_ood")
+                          htru2, heart disease, mushroom, wine, toy_Story, toy_Story_ood")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
   parser.add_argument("--n_test", default=1000, type=int,

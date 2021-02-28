@@ -1,1 +1,0 @@
-python main.py --dataset 'segment' --mixup_scheme 'random'
