@@ -1,27 +1,21 @@
 import tensorflow as tf
 import tensorflow.keras as tfk
-from tensorflow.keras.layers import Dense
-import math
 import calibration as cal
 import numpy as np
 from tensorflow.python.keras.initializers import init_ops
-import tensorflow as tf
-tf.executing_eagerly()
 import keras.backend as K
-from tensorflow.python.ops import math_ops
 
 class ECE_metrics(tfk.metrics.Metric):
     def __init__(self, name='ECE', num_of_bins=10):
         super().__init__()
         self.num_of_bins = num_of_bins
-        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer) #[0 for _ in range(num_bins+1)]
-        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer) #[0 for _ in range(num_bins+1)]
-        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer) #[0 for i in range(num_bins + 1)]
+        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
         self.ECE = self.add_weight(name="ece", initializer=init_ops.zeros_initializer)
         self.n = self.add_weight(name='n', initializer=init_ops.zeros_initializer)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        print('update \n')
         y_true = K.cast(y_true, tf.int32)
         y_pred = K.cast(y_pred, tf.float32)
 
@@ -39,7 +33,6 @@ class ECE_metrics(tfk.metrics.Metric):
         return self.n.assign_add(K.cast(len(y_pred), tf.float32))
 
     def result(self):
-        print('call metrics \n')
         self.ECE.assign(0.0)
         avg_acc = [float(0) if self.counts[i] == float(0) else self.acc_counts[i] / self.counts[i] for i in range(self.num_of_bins+1)]
         avg_conf = [float(0) if self.counts[i] == float(0) else self.conf_counts[i] / self.counts[i] for i in range(self.num_of_bins+1)]
@@ -49,10 +42,10 @@ class ECE_metrics(tfk.metrics.Metric):
         return self.ECE
 
     def reset_states(self):
-        print('reset \n')
-        self.acc_counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for _ in range(num_bins+1)]
-        self.conf_counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for _ in range(num_bins+1)]
-        self.counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for i in range(num_bins + 1)]
+        print('reset')
+        self.acc_counts.assign(tf.zeros(self.num_of_bins + 1))
+        self.conf_counts.assign(tf.zeros(self.num_of_bins + 1))
+        self.counts.assign(tf.zeros(self.num_of_bins + 1))
         self.ECE.assign(0.0)
         self.n.assign(0.0)
 
@@ -61,9 +54,9 @@ class OE_metrics(tfk.metrics.Metric):
     def __init__(self, name='OE', num_of_bins=10):
         super().__init__()
         self.num_of_bins = num_of_bins
-        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer) #[0 for _ in range(num_bins+1)]
-        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1),initializer=init_ops.zeros_initializer) #[0 for _ in range(num_bins+1)]
-        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer) #[0 for i in range(num_bins + 1)]
+        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
         self.OE = self.add_weight(name="oe", initializer=init_ops.zeros_initializer)
         self.n = self.add_weight(name='n', initializer=init_ops.zeros_initializer)
 
@@ -84,7 +77,6 @@ class OE_metrics(tfk.metrics.Metric):
         return
 
     def result(self):
-
         self.OE.assign(0.0)
         avg_acc = [float(0) if self.counts[i] == float(0) else self.acc_counts[i] / self.counts[i] for i in
                    range(self.num_of_bins+1)]
@@ -96,9 +88,9 @@ class OE_metrics(tfk.metrics.Metric):
         return self.OE
 
     def reset_states(self):
-        self.acc_counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for _ in range(num_bins+1)]
-        self.conf_counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for _ in range(num_bins+1)]
-        self.counts.assign(tf.zeros(self.num_of_bins + 1)) #self.add_weight('counts', shape=(self.num_of_bins + 1), initializer="zeros") #[0 for i in range(num_bins + 1)]
+        self.acc_counts.assign(tf.zeros(self.num_of_bins + 1))
+        self.conf_counts.assign(tf.zeros(self.num_of_bins + 1))
+        self.counts.assign(tf.zeros(self.num_of_bins + 1))
         self.n.assign(0.0)
         self.OE.assign(0.0)
 
@@ -145,51 +137,7 @@ def compute_calibration_metrics(labels, outputs, num_bins=10, device='cuda'):
 
     return ECE #, OE
 
-def ECE_metrics_(labels, outputs, num_bins=10,):
-    labels = K.cast(labels, tf.int32)
-    outputs = K.cast(outputs, tf.float32)
-    acc_counts = np.zeros(num_bins+1)
-    conf_counts = np.zeros(num_bins+1)
-    counts = np.zeros(num_bins+1)
-    probabilities = K.softmax(outputs, axis=1)
-    confs = K.max(probabilities, axis=1)
-    preds = K.argmax(probabilities, axis=1)
-    labels = K.argmax(labels, axis=1)
-
-    bins = K.cast((confs * 100) // (100/num_bins), tf.int32)
-    unique_bins, unique_idxes, unique_counts = tf.unique_with_counts(tf.sort(bins))
-    acc_index = K.equal(preds, labels)
-
-    unique_bins = unique_bins.numpy()
-    unique_idxes = unique_idxes.numpy()
-    unique_counts = unique_counts.numpy()
-
-    # count
-    counts[unique_bins] = K.cast(unique_counts, tf.float32).numpy()
-
-    # conf
-    for i in range(len(unique_bins)):
-        conf_counts[unique_bins[i]] = K.sum(confs[unique_idxes == unique_bins[i]]).numpy()
-
-    # for acc
-    acc_unique_bins, acc_unique_idxes, acc_unique_counts = tf.unique_with_counts(tf.sort(bins[acc_index]))
-    acc_unique_bins = acc_unique_bins.numpy()
-    acc_unique_idxes = acc_unique_idxes.numpy()
-    acc_unique_counts = acc_unique_counts.numpy()
-    acc_counts[acc_unique_bins] = acc_unique_counts
-
-    #sum
-    avg_acc = [0 if count == 0 else acc_count / count for acc_count, count in zip(acc_counts, counts)]
-    avg_conf = [0 if count == 0 else conf_count / count for conf_count, count in zip(conf_counts, counts)]
-    ECE, OE = 0, 0
-
-    for i in range(num_bins + 1):
-        ECE += (counts[i] / counts.sum()) * abs(avg_acc[i] - avg_conf[i])
-        OE += (counts[i] / counts.sum()) * (avg_conf[i] * (max(avg_conf[i] - avg_acc[i], 0)))
-    return ECE
-
-
-
+'''
 y_true = np.array([[0, 0, 1],
                    [0, 1, 0],
                    [0, 0, 1],
@@ -207,10 +155,10 @@ y_pred = np.array([[0.1, 0.9, 0.8],
 
 y_true = tf.convert_to_tensor(y_true)
 y_pred = tf.convert_to_tensor(y_pred)
-ece = compute_calibration_metrics(y_true, y_pred,num_bins=10, device='cuda')
+ece, oe = compute_calibration_metrics(y_true, y_pred,num_bins=10, device='cuda')
 print(ece)
-ece_func = ECE_metrics_(y_true, y_pred, num_bins=10)
-print(ece_func)
+print(oe)
+
 
 ECE = ECE_metrics(num_of_bins=10)
 OE = OE_metrics(num_of_bins=10)
@@ -219,10 +167,10 @@ ece_metrics = ECE.result().numpy()
 OE.update_state(y_true, y_pred)
 oe_metrics = OE.result().numpy()
 print(ece_metrics)
-
+print(oe_metrics)
 
 probs = tf.nn.softmax(y_pred, axis=1).numpy()
 labels = tf.argmax(y_true, axis=1).numpy()
 ece_cal = cal.get_ece(probs, labels, num_bins=10)
 print(ece_cal)
-
+'''
