@@ -42,7 +42,6 @@ class ECE_metrics(tfk.metrics.Metric):
         return self.ECE
 
     def reset_states(self):
-        print('reset')
         self.acc_counts.assign(tf.zeros(self.num_of_bins + 1))
         self.conf_counts.assign(tf.zeros(self.num_of_bins + 1))
         self.counts.assign(tf.zeros(self.num_of_bins + 1))

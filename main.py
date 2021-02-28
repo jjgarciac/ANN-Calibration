@@ -37,7 +37,7 @@ def plot_to_image(figure):
 def build_parser():
   parser = argparse.ArgumentParser(description='CLI Options',
                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("--dataset", default="iris",
+  parser.add_argument("--dataset", default="segment",
                   help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, sensorless_drive, segment,\
                           toy_Story, toy_Story_ood")
   parser.add_argument("--n_train", default=10000, type=int,
