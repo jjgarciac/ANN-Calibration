@@ -10,9 +10,7 @@ datasets = ['abalone',
             'htru2',
             'heart',
             'mushroom',
-            'wine',
-            'toy_Story',
-            'toy_Story_ood']
+            'wine',]
 model = ['random', 'none']
 for i_m in model:
     for i_d in datasets:

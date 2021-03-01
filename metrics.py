@@ -134,7 +134,7 @@ def compute_calibration_metrics(labels, outputs, num_bins=10, device='cuda'):
         ECE += (counts[i] / n) * abs(avg_acc[i] - avg_conf[i])
         OE += (counts[i] / n) * (avg_conf[i] * (max(avg_conf[i] - avg_acc[i], 0)))
 
-    return ECE #, OE
+    return ECE , OE
 
 '''
 y_true = np.array([[0, 0, 1],
