@@ -24,7 +24,8 @@ datasets = ['abalone',
             'wine',
             'toy_Story',
             'toy_Story_ood']
-mix_up_schemes = [ 'none', 'random']
+mix_up_schemes = ['none', 'random', ]
+models = ['none', 'random', 'manifold']
 TRAIN_TEST_RATIO = 0.9
 BATCH_SIZE = 16
 EPOCHS = 10
@@ -38,15 +39,25 @@ for i_d in datasets:
     dict_results[i_d]['ACC'] = {}
     dict_results[i_d]['ECE'] = {}
     dict_results[i_d]['OE'] = {}
-    for i_mix_up_scheme in mix_up_schemes:
-        if i_mix_up_scheme == 'none':
+
+    for i_model in models:
+        if i_model == 'none':
             ALPHA = 0
+            N_NEIGHBORS = 20
+            i_mix_up_scheme = i_model
+            MANIFOLD_MIXUP = False
+        elif i_model == 'random':
+            ALPHA = 0.4
+            N_NEIGHBORS = 0
+            i_mix_up_scheme = i_model
+            MANIFOLD_MIXUP = False
         else:
             ALPHA = 0.4
-        if i_mix_up_scheme == 'random':
             N_NEIGHBORS = 0
-        else:
-            N_NEIGHBORS = 20
+            i_mix_up_scheme = 'random'
+            MANIFOLD_MIXUP = True
+
+
         MODEL_NAME = '{}/r{}-b{}-e{}-a{}-{}-n{}-l{}-o{}{}'.format(i_d,
                                                                   TRAIN_TEST_RATIO,
                                                                   BATCH_SIZE,
@@ -62,14 +73,22 @@ for i_d in datasets:
         model_path = os.path.join(gdrive_rpath, MODEL_NAME)
         try:
             list_ts = os.listdir(model_path)
-            metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(list_ts[0])) # use the 1st time point
-            dict = open_dict_txt(metric_file)
+            for i in range(len(list_ts)):
+               metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(list_ts[i])) # use the 1st time point
+               if os.path.exists(metric_file):
+                   dict = open_dict_txt(metric_file)
+                   break
+               else:
+                   continue
         except:
             print('Lack ' + model_path)
-        dict_results[i_d]['ACC'][i_mix_up_scheme] = dict['accuracy']
-        dict_results[i_d]['ECE'][i_mix_up_scheme] = dict['ece_metrics']
-        dict_results[i_d]['OE'][i_mix_up_scheme] = dict['oe_metrics']
+        dict_results[i_d]['ACC'][i_model] = round(dict['accuracy'], 3)
+        dict_results[i_d]['ECE'][i_model] = round(dict['ece_metrics'], 3)
+        dict_results[i_d]['OE'][i_model] = round(dict['oe_metrics'], 3)
 
-pd.DataFrame(dict_results).to_csv('../results/baseline.csv')
-
+    dict_results[i_d]['ACC'] = pd.Series(dict_results[i_d]['ACC']).to_string()
+    dict_results[i_d]['ECE'] = pd.Series(dict_results[i_d]['ECE']).to_string()
+    dict_results[i_d]['OE'] = pd.Series(dict_results[i_d]['OE']).to_string()
+pd.DataFrame(dict_results).to_latex('../results/baseline', multirow=True)
+pd.DataFrame.from_dict(dict_results).to_csv('../results/baseline.csv')
 

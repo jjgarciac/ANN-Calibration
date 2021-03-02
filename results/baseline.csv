@@ -1,4 +1,88 @@
 ,abalone,arcene,arrhythmia,iris,phishing,moon,sensorless_drive,segment,htru2,heart,mushroom,wine,toy_Story,toy_Story_ood
-ACC,"{'none': 0.2464114874601364, 'random': 0.21770334243774414}","{'none': 0.6499999761581421, 'random': 0.7900000214576721}","{'none': 0.6086956262588501, 'random': 0.6086956262588501}","{'none': 0.7333333492279053, 'random': 0.9333333373069763}","{'none': 0.961121141910553, 'random': 0.9575045108795166}","{'none': 1.0, 'random': 0.9950000047683716}","{'none': 0.9401811361312866, 'random': 0.8965988755226135}","{'none': 0.7604761719703674, 'random': 0.48428571224212646}","{'none': 0.9754189848899841, 'random': 0.9770949482917786}","{'none': 0.5806451439857483, 'random': 0.5483871102333069}","{'none': 1.0, 'random': 0.998769998550415}","{'none': 0.5123077034950256, 'random': 0.5}","{'none': 0.998009979724884, 'random': 0.9880596995353699}","{'none': 0.9985074400901794, 'random': 0.993034839630127}"
-ECE,"{'none': 0.037216126918792725, 'random': 0.04004451632499695}","{'none': 0.3445030450820923, 'random': 0.20985093712806702}","{'none': 0.19461381435394287, 'random': 0.23742176592350006}","{'none': 0.23389457166194916, 'random': 0.3978787064552307}","{'none': 0.011389597319066525, 'random': 0.029579805210232735}","{'none': 0.0010414572898298502, 'random': 0.0464712493121624}","{'none': 0.011388024315237999, 'random': 0.15337789058685303}","{'none': 0.08893119543790817, 'random': 0.3553130626678467}","{'none': 0.005147778894752264, 'random': 0.013918652199208736}","{'none': 0.33139365911483765, 'random': 0.30839046835899353}","{'none': 0.0004139542579650879, 'random': 0.02082734927535057}","{'none': 0.06515683978796005, 'random': 0.031269993633031845}","{'none': 0.008343227207660675, 'random': 0.1061139702796936}","{'none': 0.0020230445079505444, 'random': 0.15187248587608337}"
-OE,"{'none': 0.010847873985767365, 'random': 0.010271141305565834}","{'none': 0.3416048288345337, 'random': 0.20976169407367706}","{'none': 0.1478118598461151, 'random': 0.13247302174568176}","{'none': 0.03006000816822052, 'random': 0.0}","{'none': 0.006117331795394421, 'random': 0.0}","{'none': 0.0, 'random': 0.0}","{'none': 2.1683819795725867e-05, 'random': 5.395019343268359e-06}","{'none': 0.0725298672914505, 'random': 0.30867093801498413}","{'none': 0.0026867068372666836, 'random': 0.00043358930270187557}","{'none': 0.27813684940338135, 'random': 0.2664220929145813}","{'none': 0.0, 'random': 0.0007854693103581667}","{'none': 0.008870203047990799, 'random': 0.005866199731826782}","{'none': 0.00014607416233047843, 'random': 0.00011595125397434458}","{'none': 0.00047077384078875184, 'random': 0.00011244150664424524}"
+ACC,"none        0.246
+random      0.218
+manifold    0.242","none        0.65
+random      0.79
+manifold    0.71","none        0.609
+random      0.609
+manifold    0.630","none        0.733
+random      0.933
+manifold    1.000","none        0.961
+random      0.958
+manifold    0.956","none        1.000
+random      0.995
+manifold    0.999","none        0.940
+random      0.897
+manifold    0.923","none        0.760
+random      0.484
+manifold    0.670","none        0.975
+random      0.977
+manifold    0.976","none        0.581
+random      0.548
+manifold    0.484","none        1.000
+random      0.999
+manifold    1.000","none        0.512
+random      0.500
+manifold    0.477","none        0.998
+random      0.988
+manifold    0.995","none        0.999
+random      0.993
+manifold    0.999"
+ECE,"none        0.037
+random      0.040
+manifold    0.034","none        0.345
+random      0.210
+manifold    0.290","none        0.195
+random      0.237
+manifold    0.168","none        0.234
+random      0.398
+manifold    0.217","none        0.011
+random      0.030
+manifold    0.023","none        0.001
+random      0.046
+manifold    0.026","none        0.011
+random      0.153
+manifold    0.033","none        0.089
+random      0.355
+manifold    0.051","none        0.005
+random      0.014
+manifold    0.005","none        0.331
+random      0.308
+manifold    0.256","none        0.000
+random      0.021
+manifold    0.023","none        0.065
+random      0.031
+manifold    0.050","none        0.008
+random      0.106
+manifold    0.027","none        0.002
+random      0.152
+manifold    0.027"
+OE,"none        0.011
+random      0.010
+manifold    0.007","none        0.342
+random      0.210
+manifold    0.281","none        0.148
+random      0.132
+manifold    0.023","none        0.03
+random      0.00
+manifold    0.00","none        0.006
+random      0.000
+manifold    0.002","none        0.0
+random      0.0
+manifold    0.0","none        0.0
+random      0.0
+manifold    0.0","none        0.073
+random      0.309
+manifold    0.028","none        0.003
+random      0.000
+manifold    0.001","none        0.278
+random      0.266
+manifold    0.160","none        0.000
+random      0.001
+manifold    0.000","none        0.009
+random      0.006
+manifold    0.022","none        0.000
+random      0.000
+manifold    0.001","none        0.0
+random      0.0
+manifold    0.0"
