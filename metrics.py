@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow.keras as tfk
-import calibration as cal
 import numpy as np
 from tensorflow.python.keras.initializers import init_ops
 import keras.backend as K
@@ -9,9 +8,12 @@ class ECE_metrics(tfk.metrics.Metric):
     def __init__(self, name='ECE', num_of_bins=10):
         super().__init__()
         self.num_of_bins = num_of_bins
-        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
-        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
-        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
+        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
+        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
         self.ECE = self.add_weight(name="ece", initializer=init_ops.zeros_initializer)
         self.n = self.add_weight(name='n', initializer=init_ops.zeros_initializer)
 
@@ -53,9 +55,12 @@ class OE_metrics(tfk.metrics.Metric):
     def __init__(self, name='OE', num_of_bins=10):
         super().__init__()
         self.num_of_bins = num_of_bins
-        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
-        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
-        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), initializer=init_ops.zeros_initializer)
+        self.acc_counts = self.add_weight('acc_counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
+        self.conf_counts = self.add_weight('conf_counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
+        self.counts = self.add_weight('counts', shape=(self.num_of_bins + 1), 
+                initializer=init_ops.zeros_initializer)
         self.OE = self.add_weight(name="oe", initializer=init_ops.zeros_initializer)
         self.n = self.add_weight(name='n', initializer=init_ops.zeros_initializer)
 

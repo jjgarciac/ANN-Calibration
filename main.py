@@ -62,14 +62,14 @@ def build_parser():
                   help="alpha for mixup")
   parser.add_argument("--manifold_mixup", action='store_true',
                   help="use manifold mixup instead of data mixup")
-  
   parser.add_argument("--train_test_ratio", default=0.9, type=float,
                   help="split the dataset into training and testing")
   parser.add_argument("--shuffle", default='true', type=str,
                   help="shuffle after each epoch")
   parser.add_argument("--n_channels", default=1, type=int,
                   help="")
-
+  parser.add_argument("--hybrid_model", action='store_true',
+                  help="use hybrid model instead of normal")
   parser.add_argument("--ood", action='store_true',
                   help="use ood samples if available on dataset.")
   return parser
@@ -137,7 +137,7 @@ def run():
                                                         save_best_only=True
                                                         )
 
-  model = build_model(x_train.shape[1], y_train.shape[1], manifold_mixup=MANIFOLD_MIXUP)
+  model = build_model(x_train.shape[1], y_train.shape[1], manifold_mixup=MANIFOLD_MIXUP, hybrid_model=HYBRID_MODEL)
   
   def plot_boundary(epoch, logs):
     # Use the model to predict the values from the validation dataset.
@@ -154,23 +154,6 @@ def run():
     with file_writer_cm.as_default():
       tf.summary.image("Boundaries", image, step=epoch)
   
-  def plot_boundary_pretrain(epoch, logs):
-    # Use the model to predict the values from the validation dataset.
-    xy = np.mgrid[-1:1.1:0.01, -2:2.1:0.01].reshape(2,-1).T
-    hat_z = tf.nn.softmax(model(xy, training=False), axis=1)
-    #scipy.special.softmax(hat_z, axis=1)
-    c = np.sum(np.arange(6)[1:]*hat_z, axis=1)
-    #c = np.argmax(np.arange(6)[1:]*scipy.special.softmax(hat_z, axis=1), axis=1
-    # xy = np.mgrid[-1:1.1:0.01, -2:2.1:0.01].reshape(2,-1).T
-    figure = plt.figure(figsize=(8, 8))
-    plt.scatter(xy[:,0], xy[:,1], c=c, cmap="brg")
-    image = plot_to_image(figure) 
-    # Log the confusion matrix as an image summary.
-    with file_writer_cm.as_default():
-      tf.summary.image("Boundaries_pretrain", image, step=epoch)
-
-
-  border_callback_pretrain = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary_pretrain)
   border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
 
   training_generator = mixup.data_generator(x_train, 
@@ -219,12 +202,12 @@ def run():
                                            tensorboard_callback,
                                            model_cp_callback,
                                            #border_callback
-                                           ],
+                                           ]
                                 )
 
   print(model.summary())
-  model.load_weights(checkpoint_filepath)
-  model.save(model_path)
+  #model.load_weights(checkpoint_filepath)
+  #model.save(model_path)
   print('Tensorboard callback directory: {}'.format(log_dir))
   
   metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(t))
@@ -247,6 +230,7 @@ if __name__ == "__main__":
   TEST_NOISE = args.test_noise
   TRAIN_TEST_RATIO = args.train_test_ratio
   MANIFOLD_MIXUP = args.manifold_mixup
+  HYBRID_MODEL = args.hybrid_model
   OOD = args.ood
   MIXUP_SCHEME = args.mixup_scheme
   if MIXUP_SCHEME == 'random':
