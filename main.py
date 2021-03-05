@@ -111,7 +111,7 @@ def run():
   x_test = x_test.astype(np.float32)
   
   print('Finish loading data')
-  gdrive_rpath = './experiments'
+  gdrive_rpath = './experiments_100_epoch'
 
   t = int(time.time())
   log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}/logs'.format(t))
@@ -141,7 +141,7 @@ def run():
   
   def plot_boundary(epoch, logs):
     # Use the model to predict the values from the validation dataset.
-    xy = np.mgrid[-5:5:0.1, -5:5:0.1].reshape(2,-1)
+    xy = np.mgrid[-10:10:0.1, -10:10:0.1].reshape(2,-1).T
     hat_z = tf.nn.softmax(model(xy, training=False), axis=1)
     #scipy.special.softmax(hat_z, axis=1)
     c = np.sum(np.arange(hat_z.shape[1]+1)[1:]*hat_z, axis=1)

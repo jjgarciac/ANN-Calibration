@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="10772daf-aa3d-4ad3-bf8c-3c69b6e5137a" name="jyn@biag-gpu1.cs.unc.edu:22 password">
+        <fileTransfer rootFolder="/afs/cs.unc.edu/home/jyn" accessType="SFTP" host="biag-gpu0.cs.unc.edu" port="22" sshConfigId="c8e4dc56-db65-4c79-bedb-0cd4738910e8" sshConfig="jyn@biag-gpu0.cs.unc.edu:22 password" />
+      </webServer>
+    </option>
+  </component>
+</project>
