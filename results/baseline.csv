@@ -1,88 +1,76 @@
-,abalone,arcene,arrhythmia,iris,phishing,moon,sensorless_drive,segment,htru2,heart,mushroom,wine,toy_Story,toy_Story_ood
-ACC,"none        0.2464
-random      0.2177
-manifold    0.2416","none        0.65
-random      0.79
-manifold    0.71","none        0.6087
-random      0.6087
-manifold    0.6304","none        0.7333
+,abalone,arcene,arrhythmia,iris,phishing,moon,sensorless_drive,segment,htru2,heart,mushroom,wine
+ACC,"none        0.2775
+random      0.2512
+manifold    0.2512","none        0.80
+random      0.76
+manifold    0.72","none        0.6087
+random      0.6522
+manifold    0.7609","none        0.9333
 random      0.9333
-manifold    1.0000","none        0.9611
-random      0.9575
-manifold    0.9557","none        1.000
-random      0.995
-manifold    0.999","none        0.9402
-random      0.8966
-manifold    0.9226","none        0.7605
-random      0.4843
-manifold    0.6700","none        0.9754
-random      0.9771
-manifold    0.9760","none        0.5806
-random      0.5484
-manifold    0.4839","none        1.0000
-random      0.9988
-manifold    1.0000","none        0.5123
-random      0.5000
-manifold    0.4769","none        0.9980
-random      0.9881
-manifold    0.9950","none        0.9985
-random      0.9930
-manifold    0.9990"
-ECE,"none        0.0372
-random      0.0400
-manifold    0.0344","none        0.3445
-random      0.2099
-manifold    0.2896","none        0.1946
-random      0.2374
-manifold    0.1684","none        0.2339
-random      0.3979
-manifold    0.2168","none        0.0114
-random      0.0296
-manifold    0.0235","none        0.0010
-random      0.0465
-manifold    0.0262","none        0.0114
-random      0.1534
-manifold    0.0328","none        0.0889
-random      0.3553
-manifold    0.0508","none        0.0051
-random      0.0139
-manifold    0.0053","none        0.3314
-random      0.3084
-manifold    0.2560","none        0.0004
-random      0.0208
-manifold    0.0234","none        0.0652
-random      0.0313
-manifold    0.0496","none        0.0083
-random      0.1061
-manifold    0.0275","none        0.0020
-random      0.1519
-manifold    0.0269"
-OE,"none        0.0108
-random      0.0103
-manifold    0.0070","none        0.3416
-random      0.2098
-manifold    0.2807","none        0.1478
-random      0.1325
-manifold    0.0227","none        0.0301
-random      0.0000
-manifold    0.0000","none        0.0061
-random      0.0000
-manifold    0.0022","none        0.0
+manifold    0.9333","none        0.9792
+random      0.9747
+manifold    0.9711","none        0.997
+random      0.997
+manifold    1.000","none        1.0000
+random      0.9745
+manifold    0.9906","none        0.9906
+random      0.8243
+manifold    0.8543","none        0.8543
+random      0.9765
+manifold    0.9687","none        0.9687
+random      0.4194
+manifold    0.5806","none        0.5806
+random      1.0000
+manifold    0.9988","none        0.9988
+random      0.5031
+manifold    0.5292"
+ECE,"none        0.0210
+random      0.0508
+manifold    0.0405","none        0.1971
+random      0.2352
+manifold    0.2801","none        0.2456
+random      0.1611
+manifold    0.1040","none        0.1788
+random      0.2483
+manifold    0.2885","none        0.0144
+random      0.0176
+manifold    0.0113","none        0.0014
+random      0.0453
+manifold    0.0266","none        0.0266
+random      0.0899
+manifold    0.0250","none        0.0250
+random      0.0272
+manifold    0.0257","none        0.0257
+random      0.0106
+manifold    0.0077","none        0.0077
+random      0.2196
+manifold    0.0999","none        0.0999
+random      0.0244
+manifold    0.0249","none        0.0249
+random      0.0272
+manifold    0.0369"
+OE,"none        0.0056
+random      0.0107
+manifold    0.0100","none        0.1952
+random      0.2275
+manifold    0.2750","none        0.2076
+random      0.1300
+manifold    0.0856","none        0.0
 random      0.0
-manifold    0.0","none        0.0
-random      0.0
-manifold    0.0","none        0.0725
-random      0.3087
-manifold    0.0280","none        0.0027
-random      0.0004
-manifold    0.0012","none        0.2781
-random      0.2664
-manifold    0.1596","none        0.0000
-random      0.0008
-manifold    0.0000","none        0.0089
-random      0.0059
-manifold    0.0220","none        0.0001
-random      0.0001
-manifold    0.0008","none        0.0005
-random      0.0001
-manifold    0.0000"
+manifold    0.0","none        0.0119
+random      0.0022
+manifold    0.0030","none        0.0008
+random      0.0000
+manifold    0.0000","none        0.0000
+random      0.0000
+manifold    0.0001","none        0.0001
+random      0.0105
+manifold    0.0046","none        0.0046
+random      0.0000
+manifold    0.0017","none        0.0017
+random      0.1244
+manifold    0.0324","none        0.0324
+random      0.0000
+manifold    0.0003","none        0.0003
+random      0.0135
+manifold    0.0119"

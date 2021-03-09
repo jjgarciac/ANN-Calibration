@@ -1,93 +1,9 @@
-\begin{tabular}{lllllllllllllll}
+\begin{tabular}{lllllllllllll}
 \toprule
-{} &                                            abalone &                                             arcene &                                         arrhythmia &                                               iris &                                           phishing &                                               moon &                                   sensorless\_drive &                                            segment &                                              htru2 &                                              heart &                                           mushroom &                                               wine &                                          toy\_Story &                                      toy\_Story\_ood \\
+{} &                                            abalone &                                             arcene &                                         arrhythmia &                                               iris &                                           phishing &                                               moon &                                   sensorless\_drive &                                            segment &                                              htru2 &                                              heart &                                           mushroom &                                               wine \\
 \midrule
-ACC &  none        0.2464
-random      0.2177
-manifold... &  none        0.65
-random      0.79
-manifold    ... &  none        0.6087
-random      0.6087
-manifold... &  none        0.7333
-random      0.9333
-manifold... &  none        0.9611
-random      0.9575
-manifold... &  none        1.000
-random      0.995
-manifold  ... &  none        0.9402
-random      0.8966
-manifold... &  none        0.7605
-random      0.4843
-manifold... &  none        0.9754
-random      0.9771
-manifold... &  none        0.5806
-random      0.5484
-manifold... &  none        1.0000
-random      0.9988
-manifold... &  none        0.5123
-random      0.5000
-manifold... &  none        0.9980
-random      0.9881
-manifold... &  none        0.9985
-random      0.9930
-manifold... \\
-ECE &  none        0.0372
-random      0.0400
-manifold... &  none        0.3445
-random      0.2099
-manifold... &  none        0.1946
-random      0.2374
-manifold... &  none        0.2339
-random      0.3979
-manifold... &  none        0.0114
-random      0.0296
-manifold... &  none        0.0010
-random      0.0465
-manifold... &  none        0.0114
-random      0.1534
-manifold... &  none        0.0889
-random      0.3553
-manifold... &  none        0.0051
-random      0.0139
-manifold... &  none        0.3314
-random      0.3084
-manifold... &  none        0.0004
-random      0.0208
-manifold... &  none        0.0652
-random      0.0313
-manifold... &  none        0.0083
-random      0.1061
-manifold... &  none        0.0020
-random      0.1519
-manifold... \\
-OE  &  none        0.0108
-random      0.0103
-manifold... &  none        0.3416
-random      0.2098
-manifold... &  none        0.1478
-random      0.1325
-manifold... &  none        0.0301
-random      0.0000
-manifold... &  none        0.0061
-random      0.0000
-manifold... &  none        0.0
-random      0.0
-manifold    0.... &  none        0.0
-random      0.0
-manifold    0.... &  none        0.0725
-random      0.3087
-manifold... &  none        0.0027
-random      0.0004
-manifold... &  none        0.2781
-random      0.2664
-manifold... &  none        0.0000
-random      0.0008
-manifold... &  none        0.0089
-random      0.0059
-manifold... &  none        0.0001
-random      0.0001
-manifold... &  none        0.0005
-random      0.0001
-manifold... \\
+ACC &  none        0.2775\textbackslash nrandom      0.2512\textbackslash nmanifo... &  none        0.80\textbackslash nrandom      0.76\textbackslash nmanifold  ... &  none        0.6087\textbackslash nrandom      0.6522\textbackslash nmanifo... &  none        0.9333\textbackslash nrandom      0.9333\textbackslash nmanifo... &  none        0.9792\textbackslash nrandom      0.9747\textbackslash nmanifo... &  none        0.997\textbackslash nrandom      0.997\textbackslash nmanifold... &  none        1.0000\textbackslash nrandom      0.9745\textbackslash nmanifo... &  none        0.9906\textbackslash nrandom      0.8243\textbackslash nmanifo... &  none        0.8543\textbackslash nrandom      0.9765\textbackslash nmanifo... &  none        0.9687\textbackslash nrandom      0.4194\textbackslash nmanifo... &  none        0.5806\textbackslash nrandom      1.0000\textbackslash nmanifo... &  none        0.9988\textbackslash nrandom      0.5031\textbackslash nmanifo... \\
+ECE &  none        0.0210\textbackslash nrandom      0.0508\textbackslash nmanifo... &  none        0.1971\textbackslash nrandom      0.2352\textbackslash nmanifo... &  none        0.2456\textbackslash nrandom      0.1611\textbackslash nmanifo... &  none        0.1788\textbackslash nrandom      0.2483\textbackslash nmanifo... &  none        0.0144\textbackslash nrandom      0.0176\textbackslash nmanifo... &  none        0.0014\textbackslash nrandom      0.0453\textbackslash nmanifo... &  none        0.0266\textbackslash nrandom      0.0899\textbackslash nmanifo... &  none        0.0250\textbackslash nrandom      0.0272\textbackslash nmanifo... &  none        0.0257\textbackslash nrandom      0.0106\textbackslash nmanifo... &  none        0.0077\textbackslash nrandom      0.2196\textbackslash nmanifo... &  none        0.0999\textbackslash nrandom      0.0244\textbackslash nmanifo... &  none        0.0249\textbackslash nrandom      0.0272\textbackslash nmanifo... \\
+OE  &  none        0.0056\textbackslash nrandom      0.0107\textbackslash nmanifo... &  none        0.1952\textbackslash nrandom      0.2275\textbackslash nmanifo... &  none        0.2076\textbackslash nrandom      0.1300\textbackslash nmanifo... &  none        0.0\textbackslash nrandom      0.0\textbackslash nmanifold    0.0 &  none        0.0119\textbackslash nrandom      0.0022\textbackslash nmanifo... &  none        0.0008\textbackslash nrandom      0.0000\textbackslash nmanifo... &  none        0.0000\textbackslash nrandom      0.0000\textbackslash nmanifo... &  none        0.0001\textbackslash nrandom      0.0105\textbackslash nmanifo... &  none        0.0046\textbackslash nrandom      0.0000\textbackslash nmanifo... &  none        0.0017\textbackslash nrandom      0.1244\textbackslash nmanifo... &  none        0.0324\textbackslash nrandom      0.0000\textbackslash nmanifo... &  none        0.0003\textbackslash nrandom      0.0135\textbackslash nmanifo... \\
 \bottomrule
 \end{tabular}

@@ -23,13 +23,14 @@ datasets = ['abalone',
             'heart',
             'mushroom',
             'wine',
-            'toy_Story',
-            'toy_Story_ood']
+            #'toy_Story',
+            #'toy_Story_ood'
+            ]
 mix_up_schemes = ['none', 'random', ]
 models = ['none', 'random', 'manifold']
 TRAIN_TEST_RATIO = 0.9
 BATCH_SIZE = 16
-EPOCHS = 10
+EPOCHS = 100
 LOCAL_RANDOM = True
 OUT_OF_CLASS = False
 MANIFOLD_MIXUP = False
@@ -70,7 +71,7 @@ for i_d in datasets:
                                                                   1 if OUT_OF_CLASS else 0,
                                                                   "-manifold" if MANIFOLD_MIXUP else ""
                                                                   )
-        gdrive_rpath = '../experiments/'
+        gdrive_rpath = '../experiments_100_epoch/'
         model_path = os.path.join(gdrive_rpath, MODEL_NAME)
         try:
             list_ts = os.listdir(model_path)
