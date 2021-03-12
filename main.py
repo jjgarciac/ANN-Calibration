@@ -185,7 +185,6 @@ def run():
             on_epoch_end=cb.plot_boundary)
     callbacks+=[border_callback]
   if MODEL=='jem':
-    print("callback!")
     callbacks+=[cb.jem_n_epochs()]
 
   training_history = model.fit(x=training_generator, 
@@ -213,7 +212,6 @@ if __name__ == "__main__":
   parser = build_parser()
 
   args = parser.parse_args()
-  print(args)  
   MODEL = args.model
   BATCH_SIZE = args.batch_size
   EPOCHS = args.epochs

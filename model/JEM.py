@@ -35,7 +35,7 @@ class JEM(keras.Model):
         # Control parameters
         self.n_epochs=0
 
-    def sample_ood(x):
+    def sample_ood(self, x):
         ood_x = tf.Variable(x)
         for i in range(self.od_n):
             with tf.GradientTape() as g1:
