@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow.keras as k
 import matplotlib.pyplot as plt
 import io
-
+import callbacks as cb
 from sklearn.model_selection import train_test_split
 import time
 
@@ -13,28 +13,15 @@ from models import build_model
 import tensorflow as tf
 tf.executing_eagerly()
 
-def plot_to_image(figure):
-  """Converts the matplotlib plot specified by 'figure' to a PNG image and
-  returns it. The supplied figure is closed and inaccessible after this call."""
-  # Save the plot to a PNG in memory.
-  buf = io.BytesIO()
-  plt.savefig(buf, format='png')
-  # Closing the figure prevents it from being displayed directly inside
-  # the notebook.
-  plt.close(figure)
-  buf.seek(0)
-  # Convert PNG buffer to TF image
-  image = tf.image.decode_png(buf.getvalue(), channels=4)
-  # Add the batch dimension
-  image = tf.expand_dims(image, 0)
-  return image
-
 def build_parser():
   parser = argparse.ArgumentParser(description='CLI Options',
                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  # Dataset parameters
   parser.add_argument("--dataset", default="segment",
-                  help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, sensorless_drive, segment,\
-                          htru2, heart disease, mushroom, wine, toy_Story, toy_Story_ood")
+                  help="name of dataset: abalone, arcene, arrhythmia, iris, \
+                          phishing, moon, sensorless_drive, segment,\
+                          htru2, heart disease, mushroom, wine, \
+                          toy_Story, toy_Story_ood")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
   parser.add_argument("--n_test", default=1000, type=int,
@@ -44,13 +31,24 @@ def build_parser():
   parser.add_argument("--test_noise", default=0.1, type=float,
                   help="noise for testing samples")
   
-
+  # Training Dataset parameters
   parser.add_argument("--batch_size", default=16, type=int,
                   help="batch size used for training")
   parser.add_argument("--epochs", default=10, type=int,
                   help="number of epochs used for training")
+  parser.add_argument("--shuffle", default='true', type=str,
+                  help="shuffle after each epoch")
+  parser.add_argument("--monitor", default='val_accuracy', type=str,
+                  help="Metric to monitor")
+  parser.add_argument("--ood", action='store_true',
+                  help="use ood samples if available on dataset.")
   
-  parser.add_argument("--mixup_scheme", default='random', type=str,
+  # Model parameters
+  parser.add_argument("--model", default='ann', type=str,
+                  help="Available models: ann, jem, jemo, manifold_mixup")
+
+  # Mixup scheme setup
+  parser.add_argument("--mixup_scheme", default='none', type=str,
                   help="mix up strategy: random, knn, kfn, none")
   parser.add_argument("--out_of_class", default='false', type=str,
                   help="perform mixup across different classes")
@@ -64,14 +62,28 @@ def build_parser():
                   help="use manifold mixup instead of data mixup")
   parser.add_argument("--train_test_ratio", default=0.9, type=float,
                   help="split the dataset into training and testing")
-  parser.add_argument("--shuffle", default='true', type=str,
-                  help="shuffle after each epoch")
   parser.add_argument("--n_channels", default=1, type=int,
                   help="")
-  parser.add_argument("--hybrid_model", action='store_true',
-                  help="use hybrid model instead of normal")
-  parser.add_argument("--ood", action='store_true',
-                  help="use ood samples if available on dataset.")
+  
+  # JEM model parameters
+  parser.add_argument("--JEM", action='store_true',
+                  help="Flag to use JEM model")
+  parser.add_argument("--ld_lr", default=.2, type=float,
+                  help="Gradient step scale for JEM p(x) sampler")
+  parser.add_argument("--ld_std", default=1e-2, type=float,
+                  help="Sampling noise std for JEM")
+  parser.add_argument("--ld_n", default=20, type=float,
+                  help=" for JEM ood loss")
+  parser.add_argument("--od_n", default=25, type=int,
+                  help="Number of ood points to sample from JEM")
+  parser.add_argument("--od_lr", default=.2, type=float,
+                  help="Gradient scale for JEM ood samples.")
+  parser.add_argument("--od_std", default=.1, type=float,
+                  help="Sampling noise for JEM ood samples.")
+  parser.add_argument("--od_l", default=.01, type=float,
+                  help="JEM ood loss scale.")
+  parser.add_argument("--n_warmup", default=50, type=int,
+                  help="Training steps before introducing ood points in JEM.")
   return parser
 
 def run():
@@ -79,8 +91,7 @@ def run():
                           n_train=N_TRAIN,
                           n_test=N_TEST,
                           train_noise=TRAIN_NOISE,
-                          test_noise=TEST_NOISE,
-                          ood=OOD)
+                          test_noise=TEST_NOISE)
 
   stratify = DATASET not in ["abalone", "segment"]
   
@@ -114,47 +125,29 @@ def run():
   gdrive_rpath = './experiments'
 
   t = int(time.time())
-  log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}/logs'.format(t))
+  log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
   if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
   tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
   file_writer_cm = tf.summary.create_file_writer(log_dir + '/cm')
 
-  checkpoint_filepath = os.path.join(gdrive_rpath, MODEL_NAME, '{}/ckpt/'.format(t))
+  checkpoint_filepath = os.path.join(log_dir, 'ckpt')
   if not os.path.exists(checkpoint_filepath):
     os.makedirs(checkpoint_filepath)
 
-  model_path= os.path.join(gdrive_rpath, MODEL_NAME, '{}/model'.format(format(t)))
+  model_path= os.path.join(log_dir, 'model')
   if not os.path.exists(model_path):
     os.makedirs(model_path)
 
   model_cp_callback = tf.keras.callbacks.ModelCheckpoint(
                                                         filepath=checkpoint_filepath,
                                                         save_weights_only=True,
-                                                        monitor='val_accuracy',
+                                                        monitor=MONITOR,
                                                         mode='max',
-                                                        save_best_only=True
-                                                        )
+                                                        save_best_only=True)
 
-  model = build_model(x_train.shape[1], y_train.shape[1], manifold_mixup=MANIFOLD_MIXUP, hybrid_model=HYBRID_MODEL)
-  
-  def plot_boundary(epoch, logs):
-    # Use the model to predict the values from the validation dataset.
-    xy = np.mgrid[-5:5:0.1, -5:5:0.1].reshape(2,-1)
-    hat_z = tf.nn.softmax(model(xy, training=False), axis=1)
-    #scipy.special.softmax(hat_z, axis=1)
-    c = np.sum(np.arange(hat_z.shape[1]+1)[1:]*hat_z, axis=1)
-    #c = np.argmax(np.arange(6)[1:]*scipy.special.softmax(hat_z, axis=1), axis=1
-    # xy = np.mgrid[-1:1.1:0.01, -2:2.1:0.01].reshape(2,-1).T
-    figure = plt.figure(figsize=(8, 8))
-    plt.scatter(xy[:,0], xy[:,1], c=c, cmap="brg")
-    image = plot_to_image(figure) 
-    # Log the confusion matrix as an image summary.
-    with file_writer_cm.as_default():
-      tf.summary.image("Boundaries", image, step=epoch)
-  
-  border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
+  model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
 
   training_generator = mixup.data_generator(x_train, 
                                             y_train,
@@ -166,8 +159,7 @@ def run():
                                             alpha=ALPHA,
                                             local=LOCAL_RANDOM,
                                             out_of_class=OUT_OF_CLASS,
-                                            manifold_mixup=MANIFOLD_MIXUP
-                                            )
+                                            manifold_mixup=MANIFOLD_MIXUP)
   
   validation_generator = mixup.data_generator(x_val, 
                                               y_val,
@@ -176,8 +168,7 @@ def run():
                                               shuffle=False,
                                               mixup_scheme='none',
                                               alpha=0,
-                                              manifold_mixup=MANIFOLD_MIXUP
-                                              )
+                                              manifold_mixup=MANIFOLD_MIXUP)
   
   test_generator = mixup.data_generator(x_test, 
                                         y_test,
@@ -186,41 +177,44 @@ def run():
                                         shuffle=False,
                                         mixup_scheme='none',
                                         alpha=0,
-                                        manifold_mixup=MANIFOLD_MIXUP
-                                        )
+                                        manifold_mixup=MANIFOLD_MIXUP)
 
-  # Pretraining
-  # if DATASET=='toy_Story': 
-  #   pre_x = np.mgrid[-1:1.1:0.01, -2:2.1:0.01].reshape(2,-1).T 
-  #   pre_y = .2*np.ones(shape=[pre_x.shape[0], 5])
-  #   model.fit(x=pre_x, y=pre_y, epochs=1, callbacks=[border_callback_pretrain])
+  callbacks=[tensorboard_callback, model_cp_callback]
+  if DATASET=='Toy_story' or DATASET=='Toy_story_ood':
+    border_callback = tf.keras.callbacks.LambdaCallback(
+            on_epoch_end=cb.plot_boundary)
+    callbacks+=[border_callback]
+  if MODEL=='jem':
+    print("callback!")
+    callbacks+=[cb.jem_n_epochs()]
 
   training_history = model.fit(x=training_generator, 
                                 validation_data=validation_generator,
                                 epochs=EPOCHS, 
-                                callbacks=[
-                                           tensorboard_callback,
-                                           model_cp_callback,
-                                           #border_callback
-                                           ]
-                                )
+                                callbacks=callbacks)
 
-  print(model.summary())
-  #model.load_weights(checkpoint_filepath)
+  model.load_weights(checkpoint_filepath)
   #model.save(model_path)
   print('Tensorboard callback directory: {}'.format(log_dir))
   
-  metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(t))
+  metric_file = os.path.join(gdrive_rpath, 'results.txt')
   loss = model.evaluate(test_generator, return_dict=True)
-
-  with open(metric_file, "w") as f:
-    f.write(str(loss))
+   
+  with open(metric_file, "a+") as f:
+      f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+              f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+              f"{loss['loss']:.3f}\n")
+  
+  arg_file = os.path.join(log_dir, 'args.txt')
+  with open(arg_file, "w+") as f:
+    f.write(str(args))
 
 if __name__ == "__main__":
   parser = build_parser()
 
   args = parser.parse_args()
-
+  print(args)  
+  MODEL = args.model
   BATCH_SIZE = args.batch_size
   EPOCHS = args.epochs
   DATASET = args.dataset
@@ -230,7 +224,8 @@ if __name__ == "__main__":
   TEST_NOISE = args.test_noise
   TRAIN_TEST_RATIO = args.train_test_ratio
   MANIFOLD_MIXUP = args.manifold_mixup
-  HYBRID_MODEL = args.hybrid_model
+  HYBRID_MODEL = args.JEM
+  MONITOR = args.monitor
   OOD = args.ood
   MIXUP_SCHEME = args.mixup_scheme
   if MIXUP_SCHEME == 'random':
@@ -247,17 +242,6 @@ if __name__ == "__main__":
   else:
     ALPHA = 0
 
-  MODEL_NAME = '{}/r{}-b{}-e{}-a{}-{}-n{}-l{}-o{}{}'.format(DATASET,
-                                                            TRAIN_TEST_RATIO,
-                                                            BATCH_SIZE,
-                                                            EPOCHS,
-                                                            ALPHA,
-                                                            MIXUP_SCHEME,
-                                                            N_NEIGHBORS,
-                                                            1 if LOCAL_RANDOM else 0,
-                                                            1 if OUT_OF_CLASS else 0,
-                                                            "-manifold" if MANIFOLD_MIXUP else ""
-                                                            )
-  
+  MODEL_NAME = '{}/{}'.format(MODEL, DATASET)
   
   run()
