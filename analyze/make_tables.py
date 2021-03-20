@@ -11,6 +11,33 @@ def open_dict_txt(dict_filename):
     file.close()
     return dictionary
 
+
+dict_results = {}
+#####################
+jem_root = '../results/results_jem.txt'
+df_result = pd.read_csv(jem_root, header=0)
+model = df_result.values[:, 0]
+datasets = df_result.values[:, 1]
+id = df_result.values[:, 2]
+acc = df_result.values[:, 3]
+ece = df_result.values[:, 4]
+oe = df_result.values[:, 5]
+
+for i_d in datasets:
+    dict_results[i_d] = {}
+    dict_results[i_d]['ACC'] = {}
+    dict_results[i_d]['ECE'] = {}
+    dict_results[i_d]['OE'] = {}
+for i in df_result.values.shape[0]:
+    dict_results[datasets[i]]['ACC'][model[i]] = acc[i]
+
+for i_datasets in np.unique(datasets):
+    dict_results[i_datasets]['ACC'] = pd.Series(dict_results[i_datasets]['ACC']).to_string()
+    dict_results[i_datasets]['ECE'] = pd.Series(dict_results[i_datasets]['ECE']).to_string()
+    dict_results[i_datasets]['OE'] = pd.Series(dict_results[i_datasets]['OE']).to_string()
+
+
+#########################################
 datasets = ['abalone',
             'arcene',
             'arrhythmia',
@@ -35,7 +62,7 @@ LOCAL_RANDOM = True
 OUT_OF_CLASS = False
 MANIFOLD_MIXUP = False
 
-dict_results = {}
+
 for i_d in datasets:
     dict_results[i_d] = {}
     dict_results[i_d]['ACC'] = {}
@@ -82,18 +109,23 @@ for i_d in datasets:
                    break
                else:
                    continue
+            dict_results[i_d]['ACC'][i_model] = round(dict['accuracy'], 4)
+            dict_results[i_d]['ECE'][i_model] = round(dict['ece_metrics'], 4)
+            dict_results[i_d]['OE'][i_model] = round(dict['oe_metrics'], 4)
+            del dict
         except:
             print('Lack ' + model_path)
-        dict_results[i_d]['ACC'][i_model] = round(dict['accuracy'], 4)
-        dict_results[i_d]['ECE'][i_model] = round(dict['ece_metrics'], 4)
-        dict_results[i_d]['OE'][i_model] = round(dict['oe_metrics'], 4)
+        #dict_results[i_d]['ACC'][i_model] = round(dict['accuracy'], 4)
+        #dict_results[i_d]['ECE'][i_model] = round(dict['ece_metrics'], 4)
+        #dict_results[i_d]['OE'][i_model] = round(dict['oe_metrics'], 4)
 
-    dict_results[i_d]['ACC'] = pd.Series(dict_results[i_d]['ACC'])#.to_string()
-    dict_results[i_d]['ECE'] = pd.Series(dict_results[i_d]['ECE'])#.to_string()
-    dict_results[i_d]['OE'] = pd.Series(dict_results[i_d]['OE'])#.to_string()
 
-#pd.DataFrame(dict_results).to_latex('../results/baseline', multirow=True)
-#pd.DataFrame.from_dict(dict_results).to_csv('../results/baseline.csv')
+    dict_results[i_d]['ACC'] = pd.Series(dict_results[i_d]['ACC']).to_string()
+    dict_results[i_d]['ECE'] = pd.Series(dict_results[i_d]['ECE']).to_string()
+    dict_results[i_d]['OE'] = pd.Series(dict_results[i_d]['OE']).to_string()
+
+pd.DataFrame(dict_results).to_latex('../results/baseline', multirow=True)
+pd.DataFrame.from_dict(dict_results).to_csv('../results/baseline.csv')
 
 datasets_ave = datasets = ['abalone',
             'arcene',
@@ -114,8 +146,11 @@ for i_model in ['random', 'manifold']:
     for i_metrics in ['ACC', 'ECE', 'OE']:
         current_metrics[i_model][i_metrics] = []
         for i_dataset in datasets:
-            current_improve = dict_results[i_dataset][i_metrics][i_model] - dict_results[i_dataset][i_metrics]['none']
-            current_metrics[i_model][i_metrics].append(current_improve)
+            try:
+                current_improve = dict_results[i_dataset][i_metrics][i_model] - dict_results[i_dataset][i_metrics]['none']
+                current_metrics[i_model][i_metrics].append(current_improve)
+            except:
+                print(i_model)
         MEAN = round(np.array(current_metrics[i_model][i_metrics]).mean(), 4)
         STD =  round(np.array(current_metrics[i_model][i_metrics]).std(), 4)
         current_metrics[i_model][i_metrics] = str(MEAN) + '±' + str(STD)

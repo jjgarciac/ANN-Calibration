@@ -11,17 +11,17 @@ manifold    0.9333","none        0.9792
 random      0.9747
 manifold    0.9711","none        0.997
 random      0.997
-manifold    1.000","none        1.0000
+manifold    1.000","none        0.9860
 random      0.9745
-manifold    0.9906","none        0.9906
+manifold    0.9906","none        0.8529
 random      0.8243
-manifold    0.8543","none        0.8543
+manifold    0.8543","none        0.9754
 random      0.9765
-manifold    0.9687","none        0.9687
+manifold    0.9687","none        0.5806
 random      0.4194
-manifold    0.5806","none        0.5806
+manifold    0.5806","none        1.0000
 random      1.0000
-manifold    0.9988","none        0.9988
+manifold    0.9988","none        0.5231
 random      0.5031
 manifold    0.5292"
 ECE,"none        0.0210
@@ -36,17 +36,17 @@ manifold    0.2885","none        0.0144
 random      0.0176
 manifold    0.0113","none        0.0014
 random      0.0453
-manifold    0.0266","none        0.0266
+manifold    0.0266","none        0.0041
 random      0.0899
-manifold    0.0250","none        0.0250
+manifold    0.0250","none        0.0576
 random      0.0272
-manifold    0.0257","none        0.0257
+manifold    0.0257","none        0.0059
 random      0.0106
-manifold    0.0077","none        0.0077
+manifold    0.0077","none        0.1392
 random      0.2196
-manifold    0.0999","none        0.0999
+manifold    0.0999","none        0.0009
 random      0.0244
-manifold    0.0249","none        0.0249
+manifold    0.0249","none        0.0668
 random      0.0272
 manifold    0.0369"
 OE,"none        0.0056
@@ -61,16 +61,16 @@ manifold    0.0","none        0.0119
 random      0.0022
 manifold    0.0030","none        0.0008
 random      0.0000
-manifold    0.0000","none        0.0000
+manifold    0.0000","none        0.0017
 random      0.0000
-manifold    0.0001","none        0.0001
+manifold    0.0001","none        0.0491
 random      0.0105
-manifold    0.0046","none        0.0046
+manifold    0.0046","none        0.0043
 random      0.0000
-manifold    0.0017","none        0.0017
+manifold    0.0017","none        0.0636
 random      0.1244
-manifold    0.0324","none        0.0324
+manifold    0.0324","none        0.0000
 random      0.0000
-manifold    0.0003","none        0.0003
+manifold    0.0003","none        0.0431
 random      0.0135
 manifold    0.0119"
