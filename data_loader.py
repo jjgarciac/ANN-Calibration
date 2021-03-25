@@ -99,10 +99,38 @@ def load(dname='abalone',
   Load dataset.
   dname, str: heart, abalone, arcene, arrhythmia, iris, phishing, htru2
   """
-    
+  if dname == 'segment':
+      train_val_data = pd.read_csv('{}/image/segmentation.data'.format(url),
+                         skiprows=[0, 1, 2],
+                         header=0, )
+      test_data = pd.read_csv('{}/image/segmentation.test'.format(url),
+                         skiprows=[0, 1, 2],
+                         header=0)
+      ec = OneHotEncoder()
+      x_train = train_val_data
+      y_train = ec.fit_transform(np.array(train_val_data.index).reshape(-1, 1)).toarray()
+      x_test = test_data
+      y_test = ec.fit_transform(np.array(test_data.index).reshape(-1, 1)).toarray()
+
+      return {
+              'x_train': x_train,
+              'y_train': y_train,
+              'x_val': x_test,
+              'y_val': y_test,
+              }
+
+  if dname == 'sensorless_drive':
+      data = pd.read_csv('{}/00325/Sensorless_drive_diagnosis.txt'.format(url),
+                         delim_whitespace=True,
+                         header=None)
+      return {
+              'features': data[range(48)],
+              'labels': OneHotEncoder().fit_transform(data[[48]]).toarray()
+              }
+
   if dname == 'heart':
       data = pd.read_csv('{}/heart-disease/processed.cleveland.data'.format(url),
-                          sep=',', 
+                          sep=',',
                           header=None,
                         names=['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'num']
                         )

@@ -14,14 +14,14 @@ import tensorflow as tf
 tf.executing_eagerly()
 
 def build_parser():
-  parser = argparse.ArgumentParser(description='CLI Options',
-                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  # Dataset parameters
+  parser = argparse.ArgumentParser(description='cli options',
+              formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  # dataset parameters
   parser.add_argument("--dataset", default="segment",
                   help="name of dataset: abalone, arcene, arrhythmia, iris, \
                           phishing, moon, sensorless_drive, segment,\
                           htru2, heart disease, mushroom, wine, \
-                          toy_Story, toy_Story_ood")
+                          toy_story, toy_story_ood")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
   parser.add_argument("--n_test", default=1000, type=int,
@@ -30,10 +30,8 @@ def build_parser():
                   help="noise for training samples")
   parser.add_argument("--test_noise", default=0.1, type=float,
                   help="noise for testing samples")
-  parser.add_argument("--n_ood", default=0, type=int,
-                  help="number of classes to separate from dataset.")
   
-  # Training Dataset parameters
+  # training dataset parameters
   parser.add_argument("--batch_size", default=16, type=int,
                   help="batch size used for training")
   parser.add_argument("--epochs", default=10, type=int,
@@ -41,16 +39,15 @@ def build_parser():
   parser.add_argument("--shuffle", default='true', type=str,
                   help="shuffle after each epoch")
   parser.add_argument("--monitor", default='val_accuracy', type=str,
-                  help="Metric to monitor")
+                  help="metric to monitor")
   parser.add_argument("--ood", action='store_true',
                   help="use ood samples if available on dataset.")
   
-  # Model parameters
+  # model parameters
   parser.add_argument("--model", default='ann', type=str,
-                  help="Available models: ann, jem, jehm, \
-                      jemo, jehmo, manifold_mixup")
+                  help="available models: ann, jem, jemo, manifold_mixup")
 
-  # Mixup scheme setup
+  # mixup scheme setup
   parser.add_argument("--mixup_scheme", default='none', type=str,
                   help="mix up strategy: random, knn, kfn, none")
   parser.add_argument("--out_of_class", default='false', type=str,
@@ -68,25 +65,28 @@ def build_parser():
   parser.add_argument("--n_channels", default=1, type=int,
                   help="")
   
-  # JEM model parameters
-  parser.add_argument("--JEM", action='store_true',
-                  help="Flag to use JEM model")
+  # jem model parameters
+  parser.add_argument("--jem", action='store_true',
+                  help="flag to use jem model")
   parser.add_argument("--ld_lr", default=.2, type=float,
-                  help="Gradient step scale for JEM p(x) sampler")
+                  help="gradient step scale for jem p(x) sampler")
   parser.add_argument("--ld_std", default=1e-2, type=float,
-                  help="Sampling noise std for JEM")
+                  help="sampling noise std for jem")
   parser.add_argument("--ld_n", default=20, type=float,
-                  help=" for JEM ood loss")
+                  help=" for jem ood loss")
   parser.add_argument("--od_n", default=25, type=int,
-                  help="Number of ood points to sample from JEM")
+                  help="number of ood points to sample from jem")
   parser.add_argument("--od_lr", default=.2, type=float,
-                  help="Gradient scale for JEM ood samples.")
+                  help="gradient scale for jem ood samples.")
   parser.add_argument("--od_std", default=.1, type=float,
-                  help="Sampling noise for JEM ood samples.")
+                  help="sampling noise for jem ood samples.")
   parser.add_argument("--od_l", default=.01, type=float,
-                  help="JEM ood loss scale.")
+                  help="jem ood loss scale.")
   parser.add_argument("--n_warmup", default=50, type=int,
-                  help="Training steps before introducing ood points in JEM.")
+                  help="training steps before introducing ood points in jem.")
+  # image log prameters 
+  parser.add_argument("--n_ood", default=0, type=int,
+                  help="number of classes to separate from dataset.")
   return parser
 
 def run():
@@ -96,39 +96,64 @@ def run():
                           train_noise=TRAIN_NOISE,
                           test_noise=TEST_NOISE)
 
-  stratify = DATASET not in ["abalone", "segment"]
+  STRATIFY = DATASET not in ["abalone", "segment"]
   
-  if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
-    print(DATASET)
+  if DATASET not in ['arcene', 'moon', 'toy_story', 'toy_story_ood', 'segment']:
     x = data_loader.prepare_inputs(data['features'])
     y = data['labels']
     x_train, x_test, y_train, y_test = train_test_split(x,
                                                         y,
                                                         train_size=TRAIN_TEST_RATIO,
-                                                        stratify=y if stratify else None)
-    
+                                                        stratify=y if STRATIFY else none)
   else:
-    if DATASET == 'moon' or DATASET=='toy_Story' or DATASET=='toy_Story_ood':
+    if DATASET == 'moon' or DATASET=='toy_story' or DATASET=='toy_story_ood':
       x_train, x_test = data['x_train'], data['x_val']
     else:
       x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])
     y_train, y_test = data['y_train'], data['y_val']
 
-  # Generate validation split
+  # generate validation split
   x_train, x_val, y_train, y_val = train_test_split(x_train,
                                                   y_train,
                                                   train_size=TRAIN_TEST_RATIO,
-                                                  stratify=y_train if stratify else None)
+                                                  stratify=y_train if STRATIFY  else None)
 
   x_train = x_train.astype(np.float32)
   x_val = x_val.astype(np.float32)
   x_test = x_test.astype(np.float32)
-  
-  if N_OOD>0 and y_val.shape[1]>N_OOD:
-    n_ood = y_val.shape[1]-N_OOD-1
-    x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = utils.prepare_ood(
-        x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
 
+  # delete for categorical datasets
+  n_mean = np.mean(x_train, axis=0)
+  n_std = np.var(x_train, axis=0)**.5
+  
+  x_train = (x_train-n_mean)/n_std
+  x_val = (x_val-n_mean)/n_std
+  x_test = (x_test-n_mean)/n_std
+  
+  n_classes = y_val.shape[1]
+  if N_OOD>0 and n_classes>N_OOD:
+      n_ood = n_classes-N_OOD-1
+      idx_train_ood = np.argmax(y_train, axis=1)>n_ood
+      idx_train_in = np.argmax(y_train, axis=1)<=n_ood
+      idx_test_ood = np.argmax(y_test, axis=1)>n_ood
+      idx_test_in = np.argmax(y_test, axis=1)<=n_ood
+      idx_val_ood = np.argmax(y_val, axis=1)>n_ood
+      idx_val_in = np.argmax(y_val, axis=1)<=n_ood
+      
+      x_test_ood = x_test[idx_test_ood]
+      y_test_ood = y_test[idx_test_ood][n_ood+1:]
+      x_train_ood = x_train[idx_train_ood]
+      y_train_ood = y_train[idx_train_ood][n_ood+1:]
+      x_val_ood = x_val[idx_val_ood]
+      y_val_ood = y_val[idx_val_ood][n_ood+1:]
+      
+      x_train = x_train[idx_train_in]
+      x_test = x_test[idx_test_in]
+      x_val = x_val[idx_val_in]
+      y_train = y_train[idx_train_in][:n_ood+1]
+      y_test = y_test[idx_test_in][:n_ood+1]
+      y_val = y_val[idx_val_in][:n_ood+1]
+  
   print('Finish loading data')
   gdrive_rpath = './experiments'
 
@@ -206,11 +231,39 @@ def run():
   
   metric_file = os.path.join(gdrive_rpath, 'results.txt')
   loss = model.evaluate(test_generator, return_dict=True)
-   
+  
+  z_in = tf.nn.softmax(model(np.concatenate([x_test, x_val], axis=0)))
+  c_in = tf.math.reduce_max(z_in, axis=-1)
+  acc_in = tf.reduce_mean(tf.cast(tf.math.argmax(z_in, axis=-1)==y_test, tf.float32))
+  
+  z_out = tf.nn.softmax(model(np.concatenate([x_train_ood, x_test_ood, x_val_ood], axis=0)))
+  c_out = tf.math.reduce_max(z_out, axis=-1)
+  
+  z_train = tf.nn.softmax(model(x_train))
+  c_train = tf.math.reduce_max(z_train, axis=-1)
+  
+  # Plot histogram from confidences
+  plt.hist(c_in, bins=20, color='blue', label='In')
+  plt.hist(c_out, bins=20, color='red', label='Out')
+  #plt.hist(c_train, density=True, bins=20, color='green', label='Train_in')
+  plt.ylabel('Frequency')
+  plt.xlabel('Confidence')
+  plt.xlim([0, 1])
+  plt.legend()
+  plt.savefig(os.path.join(log_dir, 'confidence.png'), dpi=300)
+  plt.close()
+  plt.hist(c_in, density=True, bins=20, color='blue', label='Confidence')
+  plt.hist(acc_in, density=True, bins=20, color='red', label='Accuracy')
+  plt.ylabel('Fraction')
+  plt.xlabel('Confidence')
+  plt.xlim([0, 1])
+  plt.legend()
+  plt.savefig(os.path.join(log_dir, 'acc_conf.png'), dpi=300)
+  plt.close()
   with open(metric_file, "a+") as f:
       f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
               f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-              f"{loss['loss']:.3f}, {N_OOD}\n")
+              f"{loss['loss']:.3f}\n")
   
   arg_file = os.path.join(log_dir, 'args.txt')
   with open(arg_file, "w+") as f:
@@ -230,7 +283,7 @@ if __name__ == "__main__":
   TEST_NOISE = args.test_noise
   TRAIN_TEST_RATIO = args.train_test_ratio
   MANIFOLD_MIXUP = args.manifold_mixup
-  HYBRID_MODEL = args.JEM
+  HYBRID_MODEL = args.jem
   MONITOR = args.monitor
   OOD = args.ood
   N_OOD = args.n_ood
@@ -250,5 +303,4 @@ if __name__ == "__main__":
     ALPHA = 0
 
   MODEL_NAME = '{}/{}'.format(MODEL, DATASET)
-  
   run()
