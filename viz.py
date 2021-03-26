@@ -7,18 +7,61 @@ import utils
 import pandas as pd
 import models
 import matplotlib.pyplot as plt
+import os
+from argparse import Namespace
+
+def isfloat(x):
+    try:
+        a = float(x)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return True
+
+def isint(x):
+    try:
+        a = float(x)
+        b = int(a)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return a == b
 
 def get_model_url(model, dataset, id):
     return os.path.join('./experiments', *[model, dataset, id])
 
-def load_args(url):
+def old_load_args(url):
     parser = argparse.ArgumentParser()
-    args = parser.parse_args()
+    #parser.add_argument('--a', default=1)
+    #args = parser.parse_args()
+    args=None
     args_url = os.path.join(url, 'args.txt')
     if os.path.exists(args_url):
         with open(args_url, 'r') as f:
             ns = f.read()
             args = parser.parse_args(namespace=eval(ns))
+    return args
+
+def load_args(url):
+    parser = argparse.ArgumentParser()
+    args={}
+    args_url = os.path.join(url, 'args.txt')
+    if os.path.exists(args_url):
+        with open(args_url, 'r') as f:
+            ns = f.read()
+            for arg in ns[10:].split(','):
+                arg = arg.split('=')
+                arg[1] = arg[1].strip('\'')
+                v = arg[1]
+                if(arg[1]=='True'):
+                    v=True
+                if(arg[1]=='False'):
+                    v=False
+                if(isfloat(arg[1])):
+                    v=float(arg[1])
+                if(isint(arg[1])):
+                    v=int(arg[1])
+                args[arg[0].strip()]=v
     return args
 
 def load_data(args):
@@ -96,10 +139,15 @@ def confidence_plot(model, x, xo):
 def calibration_plot(model, x, y, ece):
     py_x = tf.nn.softmax(model(x))
     p = tf.max(py_x, axis=1)
+    
     hat_y = tf.argmax(py_x, axis=1)
     y = tf.argmax(y, axis=1)
     acc = tf.cast(hat_y==y, tf.float32)
  
+    idx = tf.argsort(p)
+    p = p[idx]
+    acc = acc[idx]
+
     plt.title(f'Calibration {model.name}: {ece}')
     plt.ylabel('Frequency')
     plt.xlabel('ACC/Conf')
