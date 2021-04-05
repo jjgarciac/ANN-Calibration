@@ -72,6 +72,7 @@ def build_parser():
 
   parser.add_argument("--ood", action='store_true',
                   help="use ood samples if available on dataset.")
+
   return parser
 
 def run():
@@ -229,7 +230,6 @@ def run():
   
   metric_file = os.path.join(gdrive_rpath, MODEL_NAME, '{}/results.txt'.format(t))
   loss = model.evaluate(test_generator, return_dict=True)
-
   with open(metric_file, "w") as f:
     f.write(str(loss))
 

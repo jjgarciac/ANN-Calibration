@@ -35,15 +35,18 @@ EPOCHS = 100
 LOCAL_RANDOM = True
 OUT_OF_CLASS = False
 MANIFOLD_MIXUP = False
+N_OOD=1
 
 dict_results = {}
 dict_results['ACC'] = {}
 dict_results['ECE'] = {}
 dict_results['OE'] = {}
+dict_results['AUC'] = {}
 for i_d in DATASETS:
     dict_results['ACC'][i_d] = {}
     dict_results['ECE'][i_d] = {}
     dict_results['OE'][i_d] = {}
+    dict_results['AUC'][i_d] = {}
     for i_model in models:
         if i_model == 'none':
             ALPHA = 0
@@ -62,7 +65,7 @@ for i_d in DATASETS:
             MANIFOLD_MIXUP = True
 
 
-        MODEL_NAME = '{}/r{}-b{}-e{}-a{}-{}-n{}-l{}-o{}{}'.format(i_d,
+        MODEL_NAME = '{}/r{}-b{}-e{}-a{}-{}-n{}-l{}-o{}{}-no{}'.format(i_d,
                                                                   TRAIN_TEST_RATIO,
                                                                   BATCH_SIZE,
                                                                   EPOCHS,
@@ -71,9 +74,9 @@ for i_d in DATASETS:
                                                                   N_NEIGHBORS,
                                                                   1 if LOCAL_RANDOM else 0,
                                                                   1 if OUT_OF_CLASS else 0,
-                                                                  "-manifold" if MANIFOLD_MIXUP else ""
-                                                                  )
-        gdrive_rpath = '../experiments_100_epoch/'
+                                                                  "-manifold" if MANIFOLD_MIXUP else "",
+                                                                  N_OOD,)
+        gdrive_rpath = '../experiments_ood/'
         model_path = os.path.join(gdrive_rpath, MODEL_NAME)
         try:
             list_ts = os.listdir(model_path)
@@ -87,8 +90,13 @@ for i_d in DATASETS:
             dict_results['ACC'][i_d][i_model] = round(dict['accuracy'], 4)
             dict_results['ECE'][i_d][i_model] = round(dict['ece_metrics'], 4)
             dict_results['OE'][i_d][i_model] = round(dict['oe_metrics'], 4)
+            dict_results['AUC'][i_d][i_model] = round(dict['auc_of_ood'], 4)
             del dict
         except:
+            dict_results['ACC'][i_d][i_model] = 'XXX' #round(dict['accuracy'], 4)
+            dict_results['ECE'][i_d][i_model] = 'XXX' #round(dict['ece_metrics'], 4)
+            dict_results['OE'][i_d][i_model] = 'XXX' #round(dict['oe_metrics'], 4)
+            dict_results['AUC'][i_d][i_model] = 'XXX'
             print('Lack ' + model_path)
         #dict_results[i_d]['ACC'][i_model] = round(dict['accuracy'], 4)
         #dict_results[i_d]['ECE'][i_model] = round(dict['ece_metrics'], 4)
@@ -99,7 +107,7 @@ for i_d in DATASETS:
     #dict_results[i_d]['ECE'] = pd.Series(dict_results[i_d]['ECE']).to_string()
     #dict_results[i_d]['OE'] = pd.Series(dict_results[i_d]['OE']).to_string()
 
-
+'''
 #####################
 jem_root = '../results/results_jem.txt'
 df_result = pd.read_csv(jem_root, header=0)
@@ -121,10 +129,10 @@ for i in range(df_result.values.shape[0]):
 #    dict_results[i_D]['ECE'] = pd.Series(dict_results[i_D]['ECE']).to_string()
 #    dict_results[i_D]['OE'] = pd.Series(dict_results[i_D]['OE']).to_string()
 ##############################################
-
-for i_metrics in ['ACC', 'ECE', 'OE']:
-    pd.DataFrame(dict_results[i_metrics]).T.to_latex('../results/baseline_' + i_metrics, multirow=True)
-    pd.DataFrame.from_dict(dict_results[i_metrics]).T.to_csv('../results/baseline_' + i_metrics + '.csv')
+'''
+for i_metrics in ['ACC', 'ECE', 'OE', 'AUC']:
+    pd.DataFrame(dict_results[i_metrics]).T.to_latex('../results/ood_baseline_' + i_metrics, multirow=True)
+    pd.DataFrame.from_dict(dict_results[i_metrics]).T.to_csv('../results/ood_baseline_' + i_metrics + '.csv')
 
 
 # 2. calculating average

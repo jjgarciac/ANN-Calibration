@@ -5,6 +5,37 @@ import numpy as np
 from tensorflow.python.keras.initializers import init_ops
 import keras.backend as K
 
+class AUC_of_OOD(tfk.metrics.Metric):
+    def __init__(self, name='AUC'):
+        super().__init__()
+        #self.n_ood = n_ood
+        self.AUC_metrics = tfk.metrics.AUC()
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        select = tf.logical_or(K.max(y_true, axis=1) == 0, K.max(y_true, axis=1) == 1)
+        y_true = K.cast(y_true[select], tf.int32)
+        y_pred = K.cast(y_pred[select], tf.float32)
+        ood_labels = tf.reduce_max(y_true, axis=1)
+        probabilities = K.softmax(y_pred, axis=1)
+        ood_probs = tf.reduce_max(probabilities, axis=1)
+        self.AUC_metrics.update_state(ood_labels, ood_probs)
+        return
+
+    def result(self):
+        return self.AUC_metrics.result()
+    def reset_states(self):
+        self.AUC_metrics.reset_states()
+
+def func_AUC_of_OOD(y_true, y_pred,  n_ood=1):
+    select = tf.logical_or(K.max(y_true, axis=1) == 0, K.max(y_true, axis=1) == 1)
+    y_true = K.cast(y_true[select], tf.int32)
+    y_pred = K.cast(y_pred[select], tf.float32)
+    ood_labels = tf.reduce_max(y_true, axis=1)
+    probabilities = K.softmax(y_pred, axis=1)
+    ood_probs = tf.reduce_max(probabilities, axis=1)
+    ood_auc = tfk.metrics.AUC(ood_labels, ood_probs)
+    return ood_auc
+
 class ECE_metrics(tfk.metrics.Metric):
     def __init__(self, name='ECE', num_of_bins=10):
         super().__init__()
@@ -154,6 +185,10 @@ y_pred = np.array([[0.1, 0.9, 0.8],
 
 y_true = tf.convert_to_tensor(y_true)
 y_pred = tf.convert_to_tensor(y_pred)
+a = AUC_of_OOD(n_ood=1)
+a.update_state(y_true, y_pred)
+print(a.result().numpy())
+
 ece, oe = compute_calibration_metrics(y_true, y_pred,num_bins=10, device='cuda')
 print(ece)
 print(oe)

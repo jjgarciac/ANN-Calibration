@@ -1,5 +1,5 @@
 import os
-'''
+
 datasets = ['abalone',
             'arcene',
             'arrhythmia',
@@ -12,9 +12,10 @@ datasets = ['abalone',
             'heart',
             'mushroom',
             'wine',]
-            '''
+
 datasets = ['toy_Story', 'toy_Story_ood']
 manifolds = ['true', ]
+
 for i_m in manifolds:
     for i_d in datasets:
         print('Current Method: ' + str('manifold_mix_up') + ', Current dataset: ' + i_d + '.\n')

@@ -1,9 +1,10 @@
-\begin{tabular}{lll}
+\begin{tabular}{llll}
 \toprule
-{} &          random &       manifold \\
+{} &      ACC &      ECE &       OE \\
 \midrule
-ACC &  -0.0206±0.0469 &  0.0037±0.0502 \\
-ECE &   0.0187±0.0491 &  0.0032±0.0608 \\
-OE  &  -0.0053±0.0328 &  -0.0132±0.044 \\
+random   &  nan±nan &  nan±nan &  nan±nan \\
+manifold &  nan±nan &  nan±nan &  nan±nan \\
+jem      &  nan±nan &  nan±nan &  nan±nan \\
+jemo     &  nan±nan &  nan±nan &  nan±nan \\
 \bottomrule
 \end{tabular}
