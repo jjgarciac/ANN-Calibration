@@ -63,7 +63,8 @@ def build_model(in_shape, out_shape, model='ann', args=None):
 
   metrics = [ECE_metrics(name='ECE', num_of_bins=10),
              OE_metrics(name='OE', num_of_bins=10),
-             tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),]
+             tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),
+             AUC_of_OOD(name='auc_ood')]
   model.compile(optimizer=optimizer, 
                 loss=loss, 
                 metrics=metrics,

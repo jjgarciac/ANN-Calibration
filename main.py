@@ -89,6 +89,7 @@ def build_parser():
                   help="JEM ood loss scale.")
   parser.add_argument("--n_warmup", default=50, type=int,
                   help="Training steps before introducing ood points in JEM.")
+  
   return parser
 
 def run():
@@ -141,7 +142,7 @@ def run():
         x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
 
   print('Finish loading data')
-  gdrive_rpath = './experiments'
+  gdrive_rpath = './experiments_100_epoch'
 
   t = int(time.time())
   log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
@@ -168,6 +169,23 @@ def run():
                                                         verbose=1)
 
   model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
+  
+  def plot_boundary(epoch, logs):
+    # Use the model to predict the values from the validation dataset.
+    xy = np.mgrid[-10:10:0.1, -10:10:0.1].reshape(2,-1).T
+    hat_z = tf.nn.softmax(model(xy, training=False), axis=1)
+    #scipy.special.softmax(hat_z, axis=1)
+    c = np.sum(np.arange(hat_z.shape[1]+1)[1:]*hat_z, axis=1)
+    #c = np.argmax(np.arange(6)[1:]*scipy.special.softmax(hat_z, axis=1), axis=1
+    # xy = np.mgrid[-1:1.1:0.01, -2:2.1:0.01].reshape(2,-1).T
+    figure = plt.figure(figsize=(8, 8))
+    plt.scatter(xy[:,0], xy[:,1], c=c, cmap="brg")
+    image = plot_to_image(figure) 
+    # Log the confusion matrix as an image summary.
+    with file_writer_cm.as_default():
+      tf.summary.image("Boundaries", image, step=epoch)
+  
+  border_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_boundary)
 
   training_generator = mixup.data_generator(x_train, 
                                             y_train,

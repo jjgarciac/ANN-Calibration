@@ -1,0 +1,14 @@
+\begin{tabular}{llll}
+\toprule
+{} &    none &  random & manifold \\
+\midrule
+sensorless\_drive &  0.8843 &     XXX &   0.8828 \\
+segment          &     XXX &     XXX &      XXX \\
+heart            &  0.6452 &     XXX &   0.5806 \\
+mushroom         &       1 &     XXX &        1 \\
+wine             &  0.4308 &     XXX &   0.4985 \\
+arrhythmia       &  0.6522 &     XXX &   0.6739 \\
+iris             &  0.6667 &     XXX &   0.6667 \\
+abalone          &  0.2871 &  0.2273 &   0.2488 \\
+\bottomrule
+\end{tabular}

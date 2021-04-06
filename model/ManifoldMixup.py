@@ -24,13 +24,13 @@ class ManifoldMixup(tf.keras.Model):
             k = 0.0
             lam = 1.0
         x = x1
-        if k == 0:
+        if not training:
             # Denotes data mixup
             x = lam * x1 + (1 - lam) * x2
 
         mix = True
         for i, l in enumerate(self.layers):
-            if (i + 1) > k: mix = False
+            if not training: mix = False
             if mix:
                 x1 = l(x1)
                 x2 = l(x2)

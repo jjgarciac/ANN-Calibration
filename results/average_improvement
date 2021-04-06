@@ -1,0 +1,10 @@
+\begin{tabular}{llll}
+\toprule
+{} &      ACC &      ECE &       OE \\
+\midrule
+random   &  nan±nan &  nan±nan &  nan±nan \\
+manifold &  nan±nan &  nan±nan &  nan±nan \\
+jem      &  nan±nan &  nan±nan &  nan±nan \\
+jemo     &  nan±nan &  nan±nan &  nan±nan \\
+\bottomrule
+\end{tabular}
