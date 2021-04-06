@@ -12,21 +12,19 @@ def open_dict_txt(dict_filename):
     return dictionary
 
 
-DATASETS = ['abalone',
-            'arcene',
-            'arrhythmia',
-            'iris',
-            'phishing',
-            'moon',
-            'sensorless_drive',
+DATASETS = ['sensorless_drive',
             'segment',
-            'htru2',
+            #'htru2',
             'heart',
             'mushroom',
             'wine',
-            #'toy_Story',
-            #'toy_Story_ood'
-            ]
+            'arrhythmia',
+            'iris',
+            #'phishing',
+            #'moon',
+'abalone',
+]
+
 mix_up_schemes = ['none', 'random', ]
 models = ['none', 'random', 'manifold']
 TRAIN_TEST_RATIO = 0.9

@@ -1,18 +1,14 @@
 \begin{tabular}{llll}
 \toprule
-{} & none & random & manifold \\
+{} &    none &  random & manifold \\
 \midrule
-abalone          &  XXX &    XXX &      XXX \\
-arcene           &  XXX &    XXX &      XXX \\
-arrhythmia       &  XXX &    XXX &      XXX \\
-iris             &  XXX &    XXX &      XXX \\
-phishing         &  XXX &    XXX &      XXX \\
-moon             &  XXX &    XXX &      XXX \\
-sensorless\_drive &  XXX &    XXX &      XXX \\
-segment          &  XXX &    XXX &      XXX \\
-htru2            &  XXX &    XXX &      XXX \\
-heart            &  XXX &    XXX &      XXX \\
-mushroom         &  XXX &    XXX &      XXX \\
-wine             &  XXX &    XXX &      XXX \\
+sensorless\_drive &  0.8843 &     XXX &   0.8828 \\
+segment          &     XXX &     XXX &      XXX \\
+heart            &  0.6452 &     XXX &   0.5806 \\
+mushroom         &       1 &     XXX &        1 \\
+wine             &  0.4308 &     XXX &   0.4985 \\
+arrhythmia       &  0.6522 &     XXX &   0.6739 \\
+iris             &  0.6667 &     XXX &   0.6667 \\
+abalone          &  0.2871 &  0.2273 &   0.2488 \\
 \bottomrule
 \end{tabular}
