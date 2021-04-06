@@ -32,6 +32,8 @@ def build_parser():
                   help="noise for testing samples")
   parser.add_argument("--n_ood", default=0, type=int,
                   help="number of classes to separate from dataset.")
+  parser.add_argument("--norm", action="store_true",
+                  help="Normalize dataset")
   
   # Training Dataset parameters
   parser.add_argument("--batch_size", default=16, type=int,
@@ -75,7 +77,7 @@ def build_parser():
                   help="Gradient step scale for JEM p(x) sampler")
   parser.add_argument("--ld_std", default=1e-2, type=float,
                   help="Sampling noise std for JEM")
-  parser.add_argument("--ld_n", default=20, type=float,
+  parser.add_argument("--ld_n", default=20, type=int,
                   help=" for JEM ood loss")
   parser.add_argument("--od_n", default=25, type=int,
                   help="Number of ood points to sample from JEM")
@@ -124,6 +126,15 @@ def run():
   x_val = x_val.astype(np.float32)
   x_test = x_test.astype(np.float32)
   
+  if NORM:
+    print("Normalizing dataset")
+    n_mean = np.mean(x_train, axis=0)
+    n_std = np.var(x_train, axis=0)**.5 
+      
+    x_train = (x_train-n_mean)/n_std
+    x_val = (x_val-n_mean)/n_std
+    x_test = (x_test-n_mean)/n_std
+  
   if N_OOD>0 and y_val.shape[1]>N_OOD:
     n_ood = y_val.shape[1]-N_OOD-1
     x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = utils.prepare_ood(
@@ -153,7 +164,8 @@ def run():
                                                         save_weights_only=True,
                                                         monitor=MONITOR,
                                                         mode='max',
-                                                        save_best_only=True)
+                                                        save_best_only=True,
+                                                        verbose=1)
 
   model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
 
@@ -192,7 +204,7 @@ def run():
     border_callback = tf.keras.callbacks.LambdaCallback(
             on_epoch_end=cb.plot_boundary)
     callbacks+=[border_callback]
-  if MODEL=='jem':
+  if MODEL in ['jem', 'jemo', 'jehm', 'jehmo']:
     callbacks+=[cb.jem_n_epochs()]
 
   training_history = model.fit(x=training_generator, 
@@ -234,6 +246,7 @@ if __name__ == "__main__":
   MONITOR = args.monitor
   OOD = args.ood
   N_OOD = args.n_ood
+  NORM = args.norm
   MIXUP_SCHEME = args.mixup_scheme
   if MIXUP_SCHEME == 'random':
     N_NEIGHBORS = 0

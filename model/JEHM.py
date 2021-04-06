@@ -10,13 +10,13 @@ class JEHM(keras.Model):
         self,
         ld_lr=1., # Lavegning dynamics gradient scale.
         ld_std=1e-2, # Lavegning dynamics noise std.
-        ld_n=20, # Lavegning dynamics number of steps. 
+        ld_n=40, # Lavegning dynamics number of steps. 
         ood=False, # Flag to train with ood points.
         od_n=25, # ood number of steps.
         od_lr=1., # Gradient scale for ood points
         od_std=.1, # Std of ood point noise
         od_l=.01, # ood loss scaling
-        n_warmup=50, # Number of steps without training ood.
+        n_warmup=500, # Number of steps without training ood.
         name='JEHM',
         **kwargs
     ):
@@ -31,6 +31,7 @@ class JEHM(keras.Model):
         # p(x) sampler parameters
         self.ld_lr=ld_lr
         self.ld_n=ld_n
+        print(f"Samples: {self.ld_n}")
         self.ld_std=ld_std
         # Control parameters
         self.n_epochs=0
@@ -64,7 +65,7 @@ class JEHM(keras.Model):
 
     def train_step(self, data):
         x, y = data
-        
+        loss = 0
         max_val = tf.math.reduce_max(x, axis=0)
         min_val = tf.math.reduce_min(x, axis=0)
         
@@ -89,6 +90,5 @@ class JEHM(keras.Model):
 
         loss_grads = g2.gradient(loss, self.trainable_weights) 
         self.optimizer.apply_gradients(zip(loss_grads, self.trainable_weights))
-
         self.compiled_metrics.update_state(y, z)
         return {m.name: m.result() for m in self.metrics}

@@ -9,6 +9,7 @@ import models
 import matplotlib.pyplot as plt
 import os
 from argparse import Namespace
+from sklearn.model_selection import train_test_split
 
 def isfloat(x):
     try:
@@ -52,6 +53,7 @@ def load_args(url):
             for arg in ns[10:].split(','):
                 arg = arg.split('=')
                 arg[1] = arg[1].strip('\'')
+                arg[1] = arg[1].rstrip(')')
                 v = arg[1]
                 if(arg[1]=='True'):
                     v=True
@@ -62,7 +64,7 @@ def load_args(url):
                 if(isint(arg[1])):
                     v=int(arg[1])
                 args[arg[0].strip()]=v
-    return args
+    return Namespace(**args)
 
 def load_data(args):
     data = data_loader.load(args.dataset,
@@ -94,15 +96,27 @@ def load_data(args):
     x_train = x_train.astype(np.float32)
     x_val = x_val.astype(np.float32)
     x_test = x_test.astype(np.float32)
+    
+    n_mean = np.mean(x_train, axis=0)
+    n_std = np.var(x_train, axis=0)**.5 
+  
+    x_train = (x_train-n_mean)/n_std
+    x_val = (x_val-n_mean)/n_std
+    x_test = (x_test-n_mean)/n_std
 
-    if args.n_ood>0 and y_val.shape[1]>args.n_ood:
-        n_ood = y_val.shape[1]-args.n_ood-1
-        return utils.prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
-    return x_train, x_val, x_test, y_train, y_val, y_test, None, None
+    try:
+        if args.n_ood>0 and y_val.shape[1]>args.n_ood:
+            n_ood = y_val.shape[1]-args.n_ood-1
+            return utils.prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
+    except AttributeError:
+        #print(x_train, x_val, x_test, y_train, y_val, y_test)
+        return x_train, x_val, x_test, y_train, y_val, y_test, 0, 0
+    return x_train, x_val, x_test, y_train, y_val, y_test, 0, 0
 
 def load_model(url, in_shape, out_shape, args):
+    checkpoint_filepath = os.path.join(url, 'ckpt')
     model = models.build_model(in_shape, out_shape, args.model, args)
-    model.load_weights(url)
+    model.load_weights(checkpoint_filepath)
     return model
 
 def leave_cvx_hull(model_list, x, y):
@@ -110,20 +124,22 @@ def leave_cvx_hull(model_list, x, y):
     fig.suptitle('Leaving cvx hull')
     for i, y_lbl in enumerate(['accuracy', 'confidence', 'entropy']):
         for model in model_list:
+            y_list = []
             for u in range(0, 100):
+                y_plot=0
                 t = np.random.uniform(size=x.shape)
                 py_x = tf.nn.softmax(model(x + u*t))
                 if y_lbl=='entropy':
-                    y = tf.reduce_mean(tf.reduce_sum(py_x*tf.log(py_x), axis=1))
+                    y_plot = -tf.reduce_mean(tf.reduce_sum(py_x*tf.math.log(py_x), axis=1))
                 if y_lbl=='accuracy':
-                    y = tf.reduce_mean(tf.cast(
+                    y_plot = tf.reduce_mean(tf.cast(
                         tf.argmax(py_x, axis=1)==tf.argmax(y, axis=1), tf.float32))
                 if y_lbl=='confidence':
-                    y = tf.reduce_mean(tf.max(py_x, 1))
-        axs[0, i].plot(range(0,100), y, label=y_lbl)
-        axs[0, i].set(xlabel='perturbation', ylabel=y_lbl+' (mean)')
-        axs[0, i].legend()
-    return 0
+                    y_plot = tf.reduce_mean(tf.reduce_max(py_x, 1))
+                y_list.append(y_plot.numpy())
+            axs[i].plot(np.array(y_list), label=model.name)
+        axs[i].set(xlabel='perturbation', ylabel=y_lbl+' (mean)')
+        axs[i].legend()
 
 def confidence_plot(model, x, xo):
     p_in = tf.max(tf.nn.softmax(model(x)), axis=1)
@@ -160,7 +176,7 @@ def calibration_plot(model, x, y, ece):
 def analyze_features(model, x, xo, idx):
     plt.hist(x[:, idx], bins=20, color='blue', label='sample', alpha=.5)
     plt.hist(xo[:, idx], bins=20, color='red', label='ood', alpha=.5)
-    if model.name in ['jemo', 'jehm']:
+    if model.name in ['jemo', 'jehmo']:
         xgo = model.sample_ood(x)
         plt.hist(xgo[:, idx], bins=20, color='green', label='gen_o', alpha=.5)
     plt.legend()

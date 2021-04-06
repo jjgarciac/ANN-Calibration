@@ -23,7 +23,7 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     #p_x = tf.reduce_logsumexp(z, axis=1, keepdims=True)
     #outputs = p_x*z
     model = JEM.JEM(args.ld_lr, args.ld_std, args.ld_n, False, args.od_n, 
-            args.od_lr, args.od_std, args.n_warmup, inputs=inputs, outputs=outputs)
+            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
   
   elif model=='jehm':
     inputs = keras.Input(shape=(in_shape,))
@@ -31,7 +31,7 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     x = Dense(128, activation="sigmoid")(x)
     outputs = Dense(out_shape)(x)
     model = JEHM.JEHM(args.ld_lr, args.ld_std, args.ld_n, False, args.od_n, 
-            args.od_lr, args.od_std, args.n_warmup, inputs=inputs, outputs=outputs)
+            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
   
   elif model=='jehmo':
     inputs = keras.Input(shape=(in_shape,))
@@ -39,7 +39,7 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     x = Dense(128, activation="sigmoid")(x)
     outputs = Dense(out_shape)(x)
     model = JEHM.JEHM(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n, 
-            args.od_lr, args.od_std, args.n_warmup, inputs=inputs, outputs=outputs)
+            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
   
   elif model=='jemo':
     inputs = keras.Input(shape=(in_shape,))
@@ -47,7 +47,7 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     x = Dense(128, activation="sigmoid")(x)
     outputs = Dense(out_shape)(x)
     model = JEM.JEM(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n, 
-            args.od_lr, args.od_std, args.n_warmup, inputs=inputs, outputs=outputs)
+            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
   
   elif model=='ann':
     model = tfk.Sequential([

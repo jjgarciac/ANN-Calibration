@@ -16,7 +16,7 @@ class JEM(keras.Model):
         od_lr=.2, # Gradient scale for ood points
         od_std=.1, # Std of ood point noise
         od_l=.01, # ood loss scaling
-        n_warmup=50, # Number of steps without training ood.
+        n_warmup=5, # Number of steps without training ood.
         name='JEM',
         **kwargs
     ):
@@ -62,7 +62,6 @@ class JEM(keras.Model):
 
     def train_step(self, data):
         x, y = data
-        
         max_val = tf.math.reduce_max(x, axis=0)
         min_val = tf.math.reduce_min(x, axis=0)
         
