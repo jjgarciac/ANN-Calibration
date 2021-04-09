@@ -121,45 +121,26 @@ def run():
             x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])
         y_train, y_test = data['y_train'], data['y_val']
 
-
-    if 'N_OOD' in globals() and N_OOD >=1:
-        n_ood = prepare_ood(data, DATASET, N_OOD)
-        n_in = y_train.shape[1] - n_ood
-        print(f"Number of in samples: {n_in}")
-
-        # training
-        train_in_idxs = np.argmax(y_train, axis=1) < n_in
-        train_ood_idxs = np.argmax(y_train, axis=1) >= n_in
-        #val_in_idxs = np.argmax(y_val, axis=1) < n_in
-        #val_ood_idxs = np.argmax(y_val, axis=1) >= n_in
-        x_train_in = x_train[train_in_idxs]
-        y_train_in = y_train[train_in_idxs][:, 0:n_in]
-        x_train_out = x_train[train_ood_idxs]
-        y_train_out = y_train[train_ood_idxs][:, 0:n_in]
-
-        # Generate validation split
-        x_train_in, x_val_in, y_train_in, y_val_in = train_test_split(x_train_in,
-                                                          y_train_in,
-                                                          train_size=TRAIN_TEST_RATIO,
-                                                          stratify=y_train_in if stratify else None)
-
-        x_val = np.concatenate((x_train_out, x_val_in), axis=0)
-        y_val = np.concatenate((y_train_out, y_val_in), axis=0)
-        y_test = y_test[:, 0:n_in]
-        y_val = y_val[:, 0:n_in]
-
-        y_train = y_train_in[:, 0:n_in]
-        x_train = x_train_in.astype(np.float32)
-        x_val = x_val.astype(np.float32)
-    else:
-        x_train, x_val, y_train, y_val = train_test_split(x_train,
-                                                          y_train,
-                                                          train_size=TRAIN_TEST_RATIO,
-                                                          stratify=y_train if stratify else None)
+        
+    # Generate validation split
+    x_train, x_val, y_train, y_val = train_test_split(x_train,
+                                                      y_train,
+                                                      train_size=TRAIN_TEST_RATIO,
+                                                      stratify=y_train if stratify else None)
 
     x_train = x_train.astype(np.float32)
     x_val = x_val.astype(np.float32)
     x_test = x_test.astype(np.float32)
+
+    if 'N_OOD' in globals() and N_OOD >=1:
+        n_ood = update_n_ood(data, DATASET, N_OOD)
+        n_ood = y_val.shape[1]-n_ood-1
+        print("Number of ood classes: {n_ood}")
+        x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(
+        x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
+
+    x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
+    y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
 
     if NORM:
         print("Normalizing dataset")
@@ -170,12 +151,6 @@ def run():
         x_val = (x_val - n_mean) / n_std
         x_test = (x_test - n_mean) / n_std
 
-    '''
-    if N_OOD > 0 and y_val.shape[1] > N_OOD:
-        n_ood = y_val.shape[1] - N_OOD - 1
-        x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = utils.prepare_ood(
-            x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
-    '''
     print('Finish loading data')
     gdrive_rpath = './experiments'
 
@@ -200,7 +175,7 @@ def run():
         save_weights_only=True,
         monitor=MONITOR,
         mode='max',
-        save_best_only=True,
+        save_best_only=False,
         verbose=1)
 
     model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
@@ -247,7 +222,16 @@ def run():
                                           y_test,
                                           batch_size=x_test.shape[0],
                                           n_channels=N_CHANNELS,
-                                          shuffle=False,
+                                          shuffle=True,
+                                          mixup_scheme='none',
+                                          alpha=0,
+                                          manifold_mixup=MANIFOLD_MIXUP)
+
+    in_out_test_generator = mixup.data_generator(x_test_with_ood,
+                                          y_test_with_ood,
+                                          batch_size=x_test.shape[0],
+                                          n_channels=N_CHANNELS,
+                                          shuffle=True,
                                           mixup_scheme='none',
                                           alpha=0,
                                           manifold_mixup=MANIFOLD_MIXUP)
@@ -271,11 +255,11 @@ def run():
 
     metric_file = os.path.join(gdrive_rpath, 'results.txt')
     loss = model.evaluate(test_generator, return_dict=True)
-
+    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
     with open(metric_file, "a+") as f:
         f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                 f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                f"{loss['loss']:.3f}, {N_OOD}\n")
+                f"{loss['loss']:.3f}, {N_OOD}, {ood_loss['auc_of_ood']}\n")
 
     arg_file = os.path.join(log_dir, 'args.txt')
     with open(arg_file, "w+") as f:
