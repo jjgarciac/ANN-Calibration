@@ -125,6 +125,7 @@ def run():
     if 'N_OOD' in globals() and N_OOD >=1:
         n_ood = prepare_ood(data, DATASET, N_OOD)
         n_in = y_train.shape[1] - n_ood
+        print(f"Number of in samples: {n_in}")
 
         # training
         train_in_idxs = np.argmax(y_train, axis=1) < n_in
@@ -176,7 +177,7 @@ def run():
             x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
     '''
     print('Finish loading data')
-    gdrive_rpath = './experiments_100_epoch'
+    gdrive_rpath = './experiments'
 
     t = int(time.time())
     log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
