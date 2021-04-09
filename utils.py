@@ -1,5 +1,8 @@
 import numpy as np
+import data_loader
+from sklearn.model_selection import train_test_split
 
+'''
 def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood):
     idx_train_ood = np.argmax(y_train, axis=1)>n_ood
     idx_train_in = np.argmax(y_train, axis=1)<=n_ood
@@ -25,3 +28,19 @@ def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood):
     y_val = y_val[idx_val_in][:, :n_ood+1]
 
     return x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood
+'''
+
+def prepare_ood(data, DATASET, N_OOD):
+    if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
+        print(DATASET)
+        y = data['labels']
+        # check whether the choice of N_OOD is reasonable
+        classes = np.argmax(y, axis=1)
+        number_of_each_class = [(classes == ic).sum() for ic in range(int(classes.max()))]
+        number_of_each_class.reverse()
+        percentage_of_each_class = np.cumsum(np.array(number_of_each_class)) / np.array(number_of_each_class).sum()
+        n_ood = np.where(percentage_of_each_class>=0.1)[0][0] + 1
+    else:
+        n_ood = int(N_OOD)
+
+    return n_ood
