@@ -2,13 +2,13 @@
 \toprule
 {} &    none &  random & manifold \\
 \midrule
-sensorless\_drive &  0.0828 &     XXX &   0.0609 \\
+sensorless\_drive &  0.0828 &  0.0491 &   0.0609 \\
 segment          &     XXX &     XXX &      XXX \\
-heart            &  0.1213 &     XXX &   0.2439 \\
-mushroom         &       0 &     XXX &        0 \\
-wine             &  0.1375 &     XXX &   0.0798 \\
-arrhythmia       &  0.2087 &     XXX &   0.1528 \\
-iris             &  0.3317 &     XXX &   0.3055 \\
+heart            &  0.1213 &  0.2261 &   0.2439 \\
+mushroom         &       0 &       0 &        0 \\
+wine             &  0.1375 &  0.1426 &   0.0798 \\
+arrhythmia       &  0.2087 &  0.1539 &   0.1528 \\
+iris             &  0.3317 &  0.2609 &   0.3055 \\
 abalone          &  0.0478 &  0.1023 &   0.0806 \\
 \bottomrule
 \end{tabular}

@@ -1,6 +1,7 @@
 import os
 
-datasets = [
+'''
+datasets = ['sensorless_drive',
             'segment',
             #'htru2',
             'heart',
@@ -8,12 +9,12 @@ datasets = [
             'wine',
             'arrhythmia',
             'iris',
-            'sensorless_drive',
             #'phishing',
             #'moon',
-            # 'abalone'
-            ]
-
+'abalone',
+]
+'''
+datasets = ['segment']
 #manifolds = ['true', ]
 model = ['random', ]
 

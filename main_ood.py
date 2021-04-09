@@ -35,7 +35,7 @@ def plot_to_image(figure):
 def build_parser():
     parser = argparse.ArgumentParser(description='CLI Options',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--dataset", default="abalone",
+    parser.add_argument("--dataset", default="segment",
                         help="name of dataset: abalone, arcene, arrhythmia, iris, phishing, moon, sensorless_drive, segment,\
                           htru2, heart disease, mushroom, wine, toy_Story, toy_Story_ood")
     parser.add_argument("--n_train", default=10000, type=int,
@@ -97,9 +97,9 @@ def run():
         number_of_each_class = [(classes==ic).sum() for ic in range(int(classes.max()))]
         number_of_each_class.reverse()
         percentage_of_each_class = np.cumsum(np.array(number_of_each_class)) / np.array(number_of_each_class).sum()
-        N_OOD = np.where(percentage_of_each_class>=0.1)[0][0] + 1
+        n_ood = np.where(percentage_of_each_class>=0.1)[0][0] + 1
 
-        n_in = y.shape[1] - N_OOD
+        n_in = y.shape[1] - n_ood
         #stratify = classes < n_in
         x_train, x_test, y_train, y_test = train_test_split(x,
                                                             y,
@@ -114,7 +114,7 @@ def run():
         y_train, y_test = data['y_train'], data['y_val']
 
 
-    n_in = y_train.shape[1] - N_OOD
+    n_in = y_train.shape[1] - int(N_OOD)
 
     # training
     train_in_idxs = np.argmax(y_train, axis=1) < n_in

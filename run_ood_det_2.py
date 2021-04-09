@@ -1,5 +1,5 @@
 import os
-
+'''
 datasets = ['sensorless_drive',
             'segment',
             #'htru2',
@@ -12,7 +12,8 @@ datasets = ['sensorless_drive',
             #'moon',
 'abalone',
 ]
-
+'''
+datasets = ['segment']
 manifolds = ['true', ]
 model = ['none', ]
 

@@ -1,9 +1,9 @@
 ,none,random,manifold
-sensorless_drive,0.8843,XXX,0.8828
+sensorless_drive,0.8843,0.8783,0.8828
 segment,XXX,XXX,XXX
-heart,0.6452,XXX,0.5806
-mushroom,1.0,XXX,1.0
-wine,0.4308,XXX,0.4985
-arrhythmia,0.6522,XXX,0.6739
-iris,0.6667,XXX,0.6667
+heart,0.6452,0.6774,0.5806
+mushroom,1.0,1.0,1.0
+wine,0.4308,0.3969,0.4985
+arrhythmia,0.6522,0.7391,0.6739
+iris,0.6667,0.6667,0.6667
 abalone,0.2871,0.2273,0.2488
