@@ -2,7 +2,10 @@ import numpy as np
 import data_loader
 from sklearn.model_selection import train_test_split
 
-def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood):
+def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood, norm):
+    n_mean = np.mean(x_train, axis=0)
+    n_std = np.var(x_train, axis=0)**.5 
+
     idx_train_ood = np.argmax(y_train, axis=1)>n_ood
     idx_train_in = np.argmax(y_train, axis=1)<=n_ood
     idx_test_ood = np.argmax(y_test, axis=1)>n_ood
@@ -25,6 +28,10 @@ def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood):
     y_train = y_train[idx_train_in][:, :n_ood+1]
     y_test = y_test[idx_test_in][:, :n_ood+1]
     y_val = y_val[idx_val_in][:, :n_ood+1]
+
+    if norm:
+        print("Normalizing ood samples")
+        x_odd = (x_ood - n_mean)/n_std
 
     return x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood
 

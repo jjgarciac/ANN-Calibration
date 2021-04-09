@@ -150,6 +150,7 @@ def run():
         x_train = (x_train - n_mean) / n_std
         x_val = (x_val - n_mean) / n_std
         x_test = (x_test - n_mean) / n_std
+        ood_x = (x_test - n_mean) / n_std
 
     print('Finish loading data')
     gdrive_rpath = './experiments'
@@ -259,7 +260,7 @@ def run():
     with open(metric_file, "a+") as f:
         f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                 f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                f"{loss['loss']:.3f}, {N_OOD}, {ood_loss['auc_of_ood']}\n")
+                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
 
     arg_file = os.path.join(log_dir, 'args.txt')
     with open(arg_file, "w+") as f:

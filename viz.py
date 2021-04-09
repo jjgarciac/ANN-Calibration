@@ -107,7 +107,7 @@ def load_data(args):
     try:
         if args.n_ood>0 and y_val.shape[1]>args.n_ood:
             n_ood = y_val.shape[1]-args.n_ood-1
-            return utils.prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
+            return utils.prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood, args.norm)
     except AttributeError:
         #print(x_train, x_val, x_test, y_train, y_val, y_test)
         return x_train, x_val, x_test, y_train, y_val, y_test, 0, 0
