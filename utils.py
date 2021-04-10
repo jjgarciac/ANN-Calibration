@@ -6,6 +6,11 @@ def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood, norm):
     n_mean = np.mean(x_train, axis=0)
     n_std = np.var(x_train, axis=0)**.5 
 
+    if norm:
+        x_train = (x_train-n_mean)/n_std
+        x_val = (x_val-n_mean)/n_std
+        x_test = (x_test-n_mean)/n_std
+
     idx_train_ood = np.argmax(y_train, axis=1)>n_ood
     idx_train_in = np.argmax(y_train, axis=1)<=n_ood
     idx_test_ood = np.argmax(y_test, axis=1)>n_ood

@@ -137,20 +137,10 @@ def run():
         n_ood = y_val.shape[1]-n_ood-1
         print("Number of ood classes: {n_ood}")
         x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(
-        x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
+        x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
 
     x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
     y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
-
-    if NORM:
-        print("Normalizing dataset")
-        n_mean = np.mean(x_train, axis=0)
-        n_std = np.var(x_train, axis=0) ** .5
-
-        x_train = (x_train - n_mean) / n_std
-        x_val = (x_val - n_mean) / n_std
-        x_test = (x_test - n_mean) / n_std
-        ood_x = (x_test - n_mean) / n_std
 
     print('Finish loading data')
     gdrive_rpath = './experiments'
