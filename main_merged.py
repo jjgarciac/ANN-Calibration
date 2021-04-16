@@ -138,9 +138,8 @@ def run():
         print("Number of ood classes: {n_ood}")
         x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(
         x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
-
-    x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
-    y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
+        x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
+        y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
 
     print('Finish loading data')
     gdrive_rpath = './experiments'
@@ -218,7 +217,8 @@ def run():
                                           alpha=0,
                                           manifold_mixup=MANIFOLD_MIXUP)
 
-    in_out_test_generator = mixup.data_generator(x_test_with_ood,
+    if N_OOD>0:
+        in_out_test_generator = mixup.data_generator(x_test_with_ood,
                                           y_test_with_ood,
                                           batch_size=x_test.shape[0],
                                           n_channels=N_CHANNELS,
@@ -244,9 +244,11 @@ def run():
     # model.save(model_path)
     print('Tensorboard callback directory: {}'.format(log_dir))
 
+    ood_loss = 0
     metric_file = os.path.join(gdrive_rpath, 'results.txt')
     loss = model.evaluate(test_generator, return_dict=True)
-    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
+    if N_OOD>0:
+        ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
     with open(metric_file, "a+") as f:
         f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                 f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
