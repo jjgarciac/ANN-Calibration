@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="jyn@biag-gpu1.cs.unc.edu:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="jyn@biag-lambda1.cs.unc.edu:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
+      <paths name="jyn@biag-gpu1.cs.unc.edu:22">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="jyn@biag-gpu1.cs.unc.edu:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="tabular/ANN-Calibration/" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="jyn@biag-lambda1.cs.unc.edu:22 password">
         <serverdata>
           <mappings>
             <mapping deploy="tabular/ANN-Calibration/" local="$PROJECT_DIR$" web="/" />

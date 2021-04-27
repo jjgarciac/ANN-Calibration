@@ -98,7 +98,6 @@ def build_parser():
     parser.add_argument("--buffer_size", type=int, default=1600)
     parser.add_argument("--reinit_freq", type=float, default=.05)
     parser.add_argument("--load_buffer_path", type=str, default=None)
-    parser.add_argument("--mix-up-buffer", type=True, default=None)
 
     return parser
 
