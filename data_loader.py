@@ -290,6 +290,116 @@ def load(dname='abalone',
            'y_val':y_test,
       }
 
+  if dname == 'mnist':
+    df = pd.read_csv('./img_datasets/MNIST.csv')
+    
+    n_data = int(df.iloc[df.shape[0] - 3][1])
+    input_dims = [28, 28, 1]
+    input_dim = int(np.prod(input_dims))
+   
+    # if len(input_dims) == 3:
+    #     if input_dims[2] == 3:
+    #         transform = transforms.Compose([transforms.ToPILImage(),
+    #                                             transforms.RandomHorizontalFlip(),
+    #                                             transforms.RandomCrop(32, 4),
+    #                                             transforms.RandomRotation(degrees=15)])
+    
+    X, Y = df.values[:n_data, 1:input_dim + 1], df.values[:n_data, input_dim + 1: input_dim + 2]
+    X = X/255.
+    X = np.reshape(X, [-1, input_dims[0], input_dims[1], input_dims[2]])
+    enc = OneHotEncoder(sparse=False).fit(Y)
+    Y = enc.transform(Y)
+    p = np.random.permutation(X.shape[0])[:n_train] 
+    return {
+           'features': X[p],
+           'labels': Y[p]}
+
+  if dname == 'kmnist':
+    df = pd.read_csv('./img_datasets/MNIST.csv')
+    
+    n_data = int(df.iloc[df.shape[0] - 3][1])
+    input_dims = [28, 28, 1]
+    input_dim = int(np.prod(input_dims))
+   
+    #if len(input_dims) == 3:
+    #    if input_dims[2] == 3:
+    #        transform = transforms.Compose([transforms.ToPILImage(),
+    #                                            transforms.RandomHorizontalFlip(),
+    #                                            transforms.RandomCrop(32, 4),
+    #                                            transforms.RandomRotation(degrees=15)])
+    
+    X, Y = df.values[:n_data, 1:input_dim + 1], df.values[:n_data, input_dim + 1: input_dim + 2]
+    X = X/255.
+    X = np.reshape(X, [-1, input_dims[0], input_dims[1], input_dims[2]])
+    enc = OneHotEncoder(sparse=False).fit(Y)
+    Y = enc.transform(Y)
+    
+    p = np.random.permutation(X.shape[0])[:n_train] 
+    return {
+           'features': X[p],
+           'labels': Y[p]}
+
+  if dname == 'f-mnist':
+    df = pd.read_csv('./img_datasets/MNIST.csv')
+    
+    n_data = int(df.iloc[df.shape[0] - 3][1])
+    input_dims = [28, 28, 1]
+    input_dim = int(np.prod(input_dims))
+   
+    # if len(input_dims) == 3:
+    #     if input_dims[2] == 3:
+    #         transform = transforms.Compose([transforms.ToPILImage(),
+    #                                             transforms.RandomHorizontalFlip(),
+    #                                             transforms.RandomCrop(32, 4),
+    #                                             transforms.RandomRotation(degrees=15)])
+    
+    X, Y = df.values[:n_data, 1:input_dim + 1], df.values[:n_data, input_dim + 1: input_dim + 2]
+    X = X/255.
+    X = np.reshape(X, [-1, input_dims[0], input_dims[1], input_dims[2]])
+    enc = OneHotEncoder(sparse=False).fit(Y)
+    Y = enc.transform(Y)
+    
+    p = np.random.permutation(X.shape[0])[:n_train] 
+    return {
+           'features': X[p],
+           'labels': Y[p]}
+
+  if dname == 'cifar10':
+    df = pd.read_csv('./img_datasets/CIFAR10.csv.')
+    y_train = y_train.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_train)
+    y_train = enc.transform(y_train)
+
+    x_test, y_test = make_toy_Story_with_ood_class(int(n_test/5)+1)
+    y_test = y_test.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_test)
+    y_test = enc.transform(y_test)
+    
+    return {
+           'x_train': x_train,
+           'y_train': y_train,
+           'x_val': x_test,
+           'y_val':y_test,
+      }
+ 
+  if dname == 'svhn':
+    df = pd.read_csv('./img_datasets/')
+    y_train = y_train.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_train)
+    y_train = enc.transform(y_train)
+
+    x_test, y_test = make_toy_Story_with_ood_class(int(n_test/5)+1)
+    y_test = y_test.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_test)
+    y_test = enc.transform(y_test)
+    
+    return {
+           'x_train': x_train,
+           'y_train': y_train,
+           'x_val': x_test,
+           'y_val':y_test,
+      }
+
   if dname == 'toy_Story_ood':
     x_train, y_train = make_toy_Story_with_ood_class(int(n_train/5)+1)
     y_train = y_train.reshape(-1,1)
@@ -307,6 +417,26 @@ def load(dname='abalone',
            'x_val': x_test,
            'y_val':y_test,
       }
+
+  if dname == 'toy_Story_ood':
+    x_train, y_train = make_toy_Story_with_ood_class(int(n_train/5)+1)
+    y_train = y_train.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_train)
+    y_train = enc.transform(y_train)
+
+    x_test, y_test = make_toy_Story_with_ood_class(int(n_test/5)+1)
+    y_test = y_test.reshape(-1,1)
+    enc = OneHotEncoder(sparse=False).fit(y_test)
+    y_test = enc.transform(y_test)
+    
+    return {
+           'x_train': x_train,
+           'y_train': y_train,
+           'x_val': x_test,
+           'y_val':y_test,
+      }
+
+
 
 def prepare_inputs(x_train, x_test=None):
   numeric_cols = list(x_train._get_numeric_data().columns)

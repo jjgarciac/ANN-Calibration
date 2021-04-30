@@ -1,6 +1,9 @@
 import numpy as np
 import data_loader
 from sklearn.model_selection import train_test_split
+from data_loader import load
+
+ood_dataset={'cifar10':'svhn', 'svhn':'cifar10', 'mnist':'kmnist', 'kmnist':'mnist'}
 
 def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood, norm):
     n_mean = np.mean(x_train, axis=0)
@@ -54,3 +57,8 @@ def update_n_ood(data, DATASET, N_OOD):
         n_ood = int(N_OOD)
 
     return n_ood
+
+def prepare_ood_images(dataset, n_train):
+    data = load(ood_dataset[dataset], n_train=n_train)
+    # TODO: Fix data[labels] size to match cifar10
+    return data['features'], 0.*data['labels']

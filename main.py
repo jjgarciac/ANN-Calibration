@@ -21,7 +21,8 @@ def build_parser():
                   help="name of dataset: abalone, arcene, arrhythmia, iris, \
                           phishing, moon, sensorless_drive, segment,\
                           htru2, heart disease, mushroom, wine, \
-                          toy_Story, toy_Story_ood")
+                          toy_Story, toy_Story_ood, mnist, kmnist, \
+                          cifar10, svhn")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
   parser.add_argument("--n_test", default=1000, type=int,
@@ -51,6 +52,8 @@ def build_parser():
   parser.add_argument("--model", default='ann', type=str,
                   help="Available models: ann, jem, jehm, \
                       jemo, jehmo, manifold_mixup")
+  parser.add_argument("--cnn_out_size", default=20, type=int,
+                  help='CNN output size.')
 
   # Mixup scheme setup
   parser.add_argument("--mixup_scheme", default='none', type=str,
@@ -100,10 +103,12 @@ def run():
                           test_noise=TEST_NOISE)
 
   stratify = DATASET not in ["abalone", "segment"]
-  
+  images = DATASET in {'mnist', 'cifar10', 'svhn', 'f-mnist'}
+
   if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
-    print(DATASET)
-    x = data_loader.prepare_inputs(data['features'])
+    x = data['features']
+    if not images:
+      x = data_loader.prepare_inputs(data['features'])
     y = data['labels']
     x_train, x_test, y_train, y_test = train_test_split(x,
                                                         y,
@@ -127,7 +132,7 @@ def run():
   x_val = x_val.astype(np.float32)
   x_test = x_test.astype(np.float32)
   
-  if NORM:
+  if NORM and not images:
     print("Normalizing dataset")
     n_mean = np.mean(x_train, axis=0)
     n_std = np.var(x_train, axis=0)**.5 
@@ -136,14 +141,23 @@ def run():
     x_val = (x_val-n_mean)/n_std
     x_test = (x_test-n_mean)/n_std
   
-  if N_OOD>0 and y_val.shape[1]>N_OOD:
-    n_ood = y_val.shape[1]-N_OOD-1
-    x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = utils.prepare_ood(
-        x_train, x_val, x_test, y_train, y_val, y_test, n_ood)
+  if N_OOD>0 and y_val.shape[1]>N_OOD and not images:
+    n_ood = update_n_ood(data, DATASET, N_OOD)
+    n_ood = y_val.shape[1]-n_ood-1
+    print("Number of ood classes: {n_ood}")
+    x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(x_train, x_val, x_test, 
+            y_train, y_val, y_test, n_ood, NORM)
+    x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
+    y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
+
+  if OOD and images:
+    n_ood = 0
+    x_ood, y_ood = utils.prepare_ood_images(args.dataset, args.n_train)
+    x_test_with_ood = np.concatenate([x_test, x_ood], axis=0) 
+    y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
 
   print('Finish loading data')
   gdrive_rpath = './experiments'
-
   t = int(time.time())
   log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
   if not os.path.exists(log_dir):
@@ -165,11 +179,11 @@ def run():
                                                         save_weights_only=True,
                                                         monitor=MONITOR,
                                                         mode='max',
-                                                        save_best_only=True,
+                                                        save_best_only=False,
                                                         verbose=1)
 
-  model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
-  
+  model = build_model(x_train.shape[1:], y_train.shape[1], MODEL, args)
+
   def plot_boundary(epoch, logs):
     # Use the model to predict the values from the validation dataset.
     xy = np.mgrid[-10:10:0.1, -10:10:0.1].reshape(2,-1).T
@@ -216,6 +230,15 @@ def run():
                                         mixup_scheme='none',
                                         alpha=0,
                                         manifold_mixup=MANIFOLD_MIXUP)
+  if N_OOD>0 or args.ood:
+    in_out_test_generator = mixup.data_generator(x_test_with_ood,
+                                          y_test_with_ood,
+                                          batch_size=x_test.shape[0],
+                                          n_channels=N_CHANNELS,
+                                          shuffle=True,
+                                          mixup_scheme='none',
+                                          alpha=0,
+                                          manifold_mixup=MANIFOLD_MIXUP)
 
   callbacks=[tensorboard_callback, model_cp_callback]
   if DATASET=='Toy_story' or DATASET=='Toy_story_ood':
@@ -224,7 +247,7 @@ def run():
     callbacks+=[border_callback]
   if MODEL in ['jem', 'jemo', 'jehm', 'jehmo']:
     callbacks+=[cb.jem_n_epochs()]
-
+  print(model.summary())
   training_history = model.fit(x=training_generator, 
                                 validation_data=validation_generator,
                                 epochs=EPOCHS, 
@@ -236,11 +259,12 @@ def run():
   
   metric_file = os.path.join(gdrive_rpath, 'results.txt')
   loss = model.evaluate(test_generator, return_dict=True)
-   
-  with open(metric_file, "a+") as f:
-      f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
-              f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-              f"{loss['loss']:.3f}, {N_OOD}\n")
+  if args.ood:
+    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
+    with open(metric_file, "a+") as f:
+        f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+                f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")  
   
   arg_file = os.path.join(log_dir, 'args.txt')
   with open(arg_file, "w+") as f:

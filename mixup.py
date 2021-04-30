@@ -35,18 +35,23 @@ def mixup_random(batch_x, batch_y, x, y, alpha=1.0, out_of_class=False,
         lam = np.random.beta(alpha, alpha, batch_size)
     else:
         lam = np.ones(batch_size)
-    rlam = lam.reshape((batch_size, 1))
+    #TODO: Fix this logic
+    rlamy = lam.reshape((batch_size, 1))
+    if len(batch_x.shape)>2:
+        rlamx = lam.reshape((batch_size, 1, 1, 1))
+    else:
+        rlamx = rlamy
     
     if local:
       index = np.random.permutation(batch_size)
-      mixed_x = rlam * batch_x + (1 - rlam) * batch_x[index, :]
-      mixed_y = rlam * batch_y + (1 - rlam) * batch_y[index, :]
-      input_x  = [batch_x, batch_x[index, :], rlam] if manifold_mixup else mixed_x
+      mixed_x = rlamx * batch_x + (1 - rlamx) * batch_x[index, :]
+      mixed_y = rlamy * batch_y + (1 - rlamy) * batch_y[index, :]
+      input_x  = [batch_x, batch_x[index, :], rlamx] if manifold_mixup else mixed_x
     else:
       index = np.random.permutation(x.shape[0])[:batch_size]
-      mixed_x = rlam * batch_x + (1 - rlam) * x[index, :]
-      mixed_y = rlam * batch_y + (1 - rlam) * y[index, :]
-      input_x  = [batch_x, x[index, :], rlam] if manifold_mixup else mixed_x
+      mixed_x = rlamx * batch_x + (1 - rlamx) * x[index, :]
+      mixed_y = rlamy * batch_y + (1 - rlamy) * y[index, :]
+      input_x  = [batch_x, x[index, :], rlamx] if manifold_mixup else mixed_x
 
     return input_x, mixed_y
 
@@ -127,7 +132,7 @@ class data_generator(keras.utils.Sequence):
                  alpha=1.0,
                  local=False,
                  out_of_class=False,
-                 manifold_mixup=False
+                 manifold_mixup=False,
                  ):
         'Initialization'
         
@@ -137,7 +142,7 @@ class data_generator(keras.utils.Sequence):
         self.batch_size = batch_size
         self.n_channels = n_channels
 
-        self.dim = (x.shape[1], x.shape[1], x.shape[1])
+        self.dim = (x.shape[1], x.shape[1], 1)
         self.shuffle = shuffle
         self.mixup_scheme = mixup_scheme
         self.neigh = None
@@ -153,6 +158,8 @@ class data_generator(keras.utils.Sequence):
           np.random.shuffle(self.indexes)
         self.on_epoch_end()
 
+        #Parameters for images
+
     def __len__(self):
         'Denotes the number of batches per epoch'
         return int(np.floor(self.n_samples / self.batch_size))
@@ -164,7 +171,7 @@ class data_generator(keras.utils.Sequence):
 
         # Generate data
         x, y = self.__data_generation(indexes)
-
+        
         return x, y
 
     def on_epoch_end(self):
