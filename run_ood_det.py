@@ -8,11 +8,21 @@ datasets = ['sensorless_drive',
             'mushroom',
             'wine',
             'arrhythmia',
+<<<<<<< Updated upstream
             'iris',
             #'phishing',
             #'moon',
 'abalone',
 ]
+=======
+            'abalone',
+            #'sensorless_drive',
+            'segment',
+            ]
+
+manifolds = ['true', ]
+model = ['ann', 'manifold_mixup', ]
+>>>>>>> Stashed changes
 '''
 datasets = ['segment']
 manifolds = ['true', ]

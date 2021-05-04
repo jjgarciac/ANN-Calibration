@@ -234,7 +234,7 @@ def load(dname='abalone',
       
       return {
           'features': data[[c for c in data.columns if c != 'class']],
-          'labels': OneHotEncoder().fit_transform(data[['class']]).toarray(),
+          'labels': OneHotEncoder().fit_transform(data[['class']]).toarray() #[:, [2, 1, 0]],
       }
       
       

@@ -5,6 +5,50 @@ import numpy as np
 from tensorflow.python.keras.initializers import init_ops
 import keras.backend as K
 
+class ACC_with_ood(tfk.metrics.Metric):
+    def __init__(self, name='accuracy'):
+        super().__init__()
+        self.ACC_metrics = tfk.metrics.Accuracy()
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        # update ACC
+        select_in = (K.max(y_true, axis=1) == 1)
+        y_true_in = K.argmax(K.cast(y_true[select_in], tf.int32), axis=1)
+        y_pred_in = K.argmax(K.cast(y_pred[select_in], tf.float32), axis=1)
+        self.ACC_metrics.update_state(y_true_in, y_pred_in)
+    def result(self):
+        return self.ACC_metrics.result()
+    def reset_states(self):
+        self.ACC_metrics.reset_states()
+
+
+
+class Sum_Detc_Cls(tfk.metrics.Metric):
+    def __init__(self, name='Sum_Detc_Cls'):
+        super().__init__()
+        self.AUC_metrics = tfk.metrics.AUC()
+        self.ACC_metrics = tfk.metrics.Accuracy()
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        # update AUC
+        select = tf.logical_or(K.max(y_true, axis=1) == 0, K.max(y_true, axis=1) == 1)
+        y_true = K.cast(y_true[select], tf.int32)
+        y_pred = K.cast(y_pred[select], tf.float32)
+        ood_labels = tf.reduce_max(y_true, axis=1)
+        probabilities = K.softmax(y_pred, axis=1)
+        ood_probs = tf.reduce_max(probabilities, axis=1)
+        self.AUC_metrics.update_state(ood_labels, ood_probs)
+        # update ACC
+        select_in = (K.max(y_true, axis=1) == 1)
+        y_true_in = K.argmax(K.cast(y_true[select_in], tf.int32), axis=1)
+        y_pred_in = K.argmax(K.cast(y_pred[select_in], tf.float32), axis=1)
+        self.ACC_metrics.update_state(y_true_in, y_pred_in)
+
+    def result(self):
+        return (self.AUC_metrics.result() + self.ACC_metrics.result())
+    def reset_states(self):
+        self.AUC_metrics.reset_states()
+        self.ACC_metrics.reset_states()
+
+
 class AUC_of_OOD(tfk.metrics.Metric):
     def __init__(self, name='AUC'):
         super().__init__()
@@ -49,11 +93,14 @@ class ECE_metrics(tfk.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = K.cast(y_true, tf.int32)
         y_pred = K.cast(y_pred, tf.float32)
+        select_in = (K.max(y_true, axis=1) == 1)
+        y_true_in = K.cast(y_true[select_in], tf.int32)
+        y_pred_in = K.cast(y_pred[select_in], tf.float32)
 
-        probabilities = K.softmax(y_pred, axis=1)
+        probabilities = K.softmax(y_pred_in, axis=1)
         confs = K.max(probabilities, axis=1)
         preds = K.argmax(probabilities, axis=1)
-        labels = K.argmax(y_true, axis=1)
+        labels = K.argmax(y_true_in, axis=1)
 
         for (conf, pred, label) in zip(confs, preds, labels):
             bin_index = int(((conf * 100) // (100/self.num_of_bins)))
@@ -61,7 +108,7 @@ class ECE_metrics(tfk.metrics.Metric):
                 tf.compat.v1.scatter_add(self.acc_counts, bin_index, 1.0)
             tf.compat.v1.scatter_add(self.counts, bin_index, 1.0)
             tf.compat.v1.scatter_add(self.conf_counts, bin_index, tf.cast(conf, tf.float32))
-        return self.n.assign_add(K.cast(len(y_pred), tf.float32))
+        return self.n.assign_add(K.cast(len(y_pred_in), tf.float32))
 
     def result(self):
         self.ECE.assign(0.0)
@@ -93,11 +140,16 @@ class OE_metrics(tfk.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.float32)
-        self.n.assign_add(tf.cast(y_pred.shape[0], tf.float32))
-        probabilities = tf.nn.softmax(y_pred, axis=1)
+
+        select_in = (K.max(y_true, axis=1) == 1)
+        y_true_in = K.cast(y_true[select_in], tf.int32)
+        y_pred_in = K.cast(y_pred[select_in], tf.float32)
+
+        self.n.assign_add(tf.cast(y_pred_in.shape[0], tf.float32))
+        probabilities = tf.nn.softmax(y_pred_in, axis=1)
         confs = tf.reduce_max(probabilities, axis=1)
         preds = tf.argmax(probabilities, axis=1)
-        labels = tf.argmax(y_true, axis=1)
+        labels = tf.argmax(y_true_in, axis=1)
         for (conf, pred, label) in zip(confs, preds, labels):
             bin_index = int(((conf * 100) // (100/self.num_of_bins)))
             if pred == label:
