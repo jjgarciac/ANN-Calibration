@@ -15,6 +15,10 @@ from model.buffer import *
 
 tf.executing_eagerly()
 
+from numpy.random import seed
+seed(1)
+tf.random.set_seed(2) #set3set_random_seed(2)
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description='CLI Options',
@@ -255,11 +259,13 @@ def run():
                                                  training_generator.x.shape[1],
                                                  x=training_generator.x)
     ## training ##
+    t_train_start = int(time.time())
     training_history = model.fit(x=training_generator,
                                  validation_data=validation_generator,
                                  epochs=EPOCHS,
                                  callbacks=callbacks)
-
+    t_train_end = int(time.time())
+    used_time = t_train_end - t_train_start
     model.load_weights(checkpoint_filepath)
     # model.save(model_path)
     print('Tensorboard callback directory: {}'.format(log_dir))
@@ -267,12 +273,12 @@ def run():
     ood_loss = 0
     metric_file = os.path.join(gdrive_rpath, 'results.txt')
     loss = model.evaluate(test_generator, return_dict=True)
-    if N_OOD>0:
-        ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
-    with open(metric_file, "a+") as f:
-        f.write(f"{MODEL}, {DATASET}, {t}, {loss['acc_with_ood']:.3f}," \
-                f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
+    #if N_OOD>0:
+    #    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
+    #with open(metric_file, "a+") as f:
+    #    f.write(f"{MODEL}, {DATASET}, {t}, {loss['acc_with_ood']:.3f}," \
+    #            f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+    #            f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
     if args.ood:
         ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
         with open(metric_file, "a+") as f:
@@ -280,14 +286,14 @@ def run():
                     f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
                     f"{ood_loss['accuracy']:.3f}, {ood_loss['loss']:.3f}," \
                     f"{ood_loss['ece_metrics']:.3f}, {ood_loss['oe_metrics']:.3f},"
-                    f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
+                    f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}, {used_time}\n")
     else:
         with open(metric_file, "a+") as f:
             f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                     f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
                     f"None, None," \
                     f"None, None,"
-                    f"{loss['loss']:.3f}, {n_ood}, None\n")
+                    f"{loss['loss']:.3f}, {n_ood}, None, {used_time}\n")
 
 
     arg_file = os.path.join(log_dir, 'args.txt')
