@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ,none,random,manifold
 sensorless_drive,0.0799,XXX,0.052
 segment,XXX,XXX,XXX
@@ -7,3 +8,12 @@ wine,0.0928,XXX,0.0373
 arrhythmia,0.1823,XXX,0.1046
 iris,0.3311,XXX,0.297
 abalone,0.0123,0.0316,0.0252
+=======
+,jehm,jehmo,ann,jehmo_mix
+iris,0.0,0.0,0.0,0.0
+heart,0.251,0.113,0.27,0.158
+mushroom,0.0,0.0,0.0,
+wine,0.191,0.193,0.154,
+arrhythmia,0.153,0.201,0.184,
+abalone,0.282,0.265,0.105,
+>>>>>>> Stashed changes

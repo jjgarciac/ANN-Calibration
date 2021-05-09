@@ -1,0 +1,7 @@
+\begin{tabular}{lllll}
+\toprule
+{} &             ACC &            ECE &            OE &            AUC \\
+\midrule
+jehmo &  -0.0099±0.0568 &  0.0116±0.0723 &  0.0024±0.084 &  0.0357±0.0993 \\
+\bottomrule
+\end{tabular}

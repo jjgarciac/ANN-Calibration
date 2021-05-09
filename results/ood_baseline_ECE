@@ -1,8 +1,13 @@
-\begin{tabular}{llll}
+\begin{tabular}{lrrrr}
 \toprule
-{} &    none &  random & manifold \\
+{} &   jehm &  jehmo &    ann &  jehmo\_mix \\
 \midrule
+<<<<<<< Updated upstream
 sensorless\_drive &  0.0828 &     XXX &   0.0609 \\
+=======
+<<<<<<< Updated upstream
+sensorless\_drive &  0.0828 &  0.0491 &   0.0609 \\
+>>>>>>> Stashed changes
 segment          &     XXX &     XXX &      XXX \\
 heart            &  0.1213 &     XXX &   0.2439 \\
 mushroom         &       0 &     XXX &        0 \\
@@ -10,5 +15,13 @@ wine             &  0.1375 &     XXX &   0.0798 \\
 arrhythmia       &  0.2087 &     XXX &   0.1528 \\
 iris             &  0.3317 &     XXX &   0.3055 \\
 abalone          &  0.0478 &  0.1023 &   0.0806 \\
+=======
+iris       &  0.000 &  0.001 &  0.000 &      0.001 \\
+heart      &  0.288 &  0.171 &  0.284 &      0.193 \\
+mushroom   &  0.000 &  0.000 &  0.000 &        NaN \\
+wine       &  0.230 &  0.234 &  0.181 &        NaN \\
+arrhythmia &  0.179 &  0.232 &  0.209 &        NaN \\
+abalone    &  0.383 &  0.360 &  0.202 &        NaN \\
+>>>>>>> Stashed changes
 \bottomrule
 \end{tabular}
