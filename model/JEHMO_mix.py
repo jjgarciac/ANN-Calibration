@@ -8,7 +8,7 @@ Uniform = tfp.distributions.Uniform
 
 
 
-class JEHMO_mixup(keras.Model):
+class JEHMO_mix(keras.Model):
     def __init__(
         self,
         batch_size=32,
@@ -23,17 +23,15 @@ class JEHMO_mixup(keras.Model):
         od_l=.01, # ood loss scaling
         n_warmup=500, # Number of steps without training ood.
         name='JEHMO_mixup',
-        with_buffer_in=True,
-        with_buffer_out=True,
         buffer_size=1000,
         **kwargs
     ):
-        super(JEHMO_mixup, self).__init__(name=name, **kwargs)
+        super(JEHMO_mix, self).__init__(name=name, **kwargs)
         # p(x_o) sampler parameters
         # buffer pars
         self.buffer_size = buffer_size
-        self.with_buffer_in = with_buffer_in
-        self.with_buffer_out = with_buffer_out * (ood)
+        self.with_buffer_in = True
+        self.with_buffer_out =  True * (ood)
         self.reinit_freq = reinit_freq
         # other parameters
         self.bs = batch_size
@@ -86,9 +84,10 @@ class JEHMO_mixup(keras.Model):
 
 
     def mix_up(self, x, ood_x, y):
-        mixing_rate = tf.random.uniform(shape=ood_x.shape[0], minval=0, maxval=1)
+        mixing_rate = np.random.beta(.4, .4, ood_x.shape[0])[:, None]
+        #mixing_rate = tf.random.uniform(shape=ood_x.shape[0], minval=0, maxval=1)
         mixed_samples = ood_x * mixing_rate + x * (1-mixing_rate)
-        mixed_labels = y*mixing_rate + (1/y.shape[1]) * (1-mixing_rate)
+        mixed_labels = tf.ones(y.shape[1]) / y.shape[1] * mixing_rate + y*(1-mixing_rate)
         return mixed_samples, mixed_labels
 
 
@@ -166,9 +165,15 @@ class JEHMO_mixup(keras.Model):
         xk = self.sample_q(x.shape[0], x.shape[1])
 
         if self.n_epochs > self.n_warmup and self.ood:
-            ood_x = self.sample_ood(x)
-            ood_z = self(ood_x)
+            ood_x  = self.sample_ood(x)
+            mixed_x, mixed_y = self.mix_up(x, ood_x, y)
+            #mix
+            ood_mixed_z = self(mixed_x)
             ood_entropy = self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                mixed_y, ood_mixed_z))
+            # ood
+            ood_z = self(ood_x)
+            ood_entropy += self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
                 tf.ones(y.shape) * 1 / y.shape[1], ood_z))
             loss += ood_entropy
 

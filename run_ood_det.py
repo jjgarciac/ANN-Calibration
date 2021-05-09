@@ -7,7 +7,7 @@ datasets = [
             'wine',
             'arrhythmia',
             'abalone',
-            'sensorless_drive',
+            #'sensorless_drive',
             'segment',
             ]
 

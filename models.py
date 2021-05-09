@@ -8,7 +8,7 @@ import keras #Try and remove this import
 from model import JEM
 from model import JEHM
 from model.buffer import *
-
+from model import JEHMO_mix
 
 def gauss_pdf(x, name=None):
     return (1/tf.sqrt(2*math.pi))*tf.math.exp((-tf.pow(x, 2))/2)
@@ -49,6 +49,16 @@ def build_model(in_shape, out_shape, model='ann', args=None):
                       buffer_size=args.buffer_size, with_buffer_in=args.buffer_in, with_buffer_out= args.buffer_out,
                       inputs=inputs, outputs=outputs)
 
+  elif model=='jehmo_mix':
+    inputs = keras.Input(shape=(in_shape,))
+    x = Dense(128, activation="sigmoid")(inputs)
+    x = Dense(128, activation="sigmoid")(x)
+    outputs = Dense(out_shape)(x)
+    model = JEHMO_mix.JEHMO_mix(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n,
+                      args.od_lr, args.od_std, args.od_l, args.n_warmup,
+                      buffer_size=args.buffer_size,
+                      inputs=inputs, outputs=outputs)
+
   
   elif model=='jemo':
     inputs = keras.Input(shape=(in_shape,))
@@ -72,8 +82,10 @@ def build_model(in_shape, out_shape, model='ann', args=None):
 
   metrics = [ECE_metrics(name='ECE', num_of_bins=10),
              OE_metrics(name='OE', num_of_bins=10),
-             tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),
-             AUC_of_OOD(name='auc_ood')]
+             #tfk.metrics.CategoricalAccuracy('accuracy', dtype=tf.float32),
+             ACC_with_ood(name='accuracy'),
+             AUC_of_OOD(name='auc_ood'),
+             Sum_Detc_Cls(name='Sum_Detc_Cls')]
   model.compile(optimizer=optimizer, 
                 loss=loss, 
                 metrics=metrics,

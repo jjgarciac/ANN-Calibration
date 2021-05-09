@@ -15,6 +15,10 @@ from model.buffer import *
 
 tf.executing_eagerly()
 
+from numpy.random import seed
+seed(1)
+tf.random.set_seed(2) #set3set_random_seed(2)
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description='CLI Options',
@@ -41,19 +45,19 @@ def build_parser():
     # Training Dataset parameters
     parser.add_argument("--batch_size", default=16, type=int,
                         help="batch size used for training")
-    parser.add_argument("--epochs", default=200, type=int,
+    parser.add_argument("--epochs", default=100, type=int,
                         help="number of epochs used for training")
     parser.add_argument("--shuffle", default='true', type=str,
                         help="shuffle after each epoch")
-    parser.add_argument("--monitor", default='val_accuracy', type=str,
+    parser.add_argument("--monitor", default='val_sum__detc__cls', type=str,
                         help="Metric to monitor")
     parser.add_argument("--ood", action='store_true',default=1,
                         help="use ood samples if available on dataset.")
 
     # Model parameters
-    parser.add_argument("--model", default='jehmo', type=str,
+    parser.add_argument("--model", default='ann', type=str,
                         help="Available models: ann, jem, jehm, \
-                      jemo, jehmo, manifold_mixup")
+                      jemo, jehmo, manifold_mixup, jehmo_mix")
 
     # Mixup scheme setup
     parser.add_argument("--mixup_scheme", default='none', type=str,
@@ -98,7 +102,6 @@ def build_parser():
     parser.add_argument("--buffer_size", type=int, default=1600)
     parser.add_argument("--reinit_freq", type=float, default=.05)
     parser.add_argument("--load_buffer_path", type=str, default=None)
-    parser.add_argument("--mix-up-buffer", type=True, default=None)
 
     return parser
 
@@ -145,11 +148,17 @@ def run():
         print("Number of ood classes: {n_ood}")
         x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(
         x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
-        x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
-        y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
+        #x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
+        #y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
+        x_ood_val, x_ood_test, y_ood_val, y_ood_test = train_test_split(x_ood, y_ood, test_size=0.5)
+        x_test_with_ood = np.concatenate([x_test, x_ood_test], axis=0)
+        y_test_with_ood = np.concatenate([y_test, y_ood_test], axis=0)
+        x_val_with_ood = np.concatenate([x_val, x_ood_val], axis=0)
+        y_val_with_ood = np.concatenate([y_val, y_ood_val], axis=0)
+
 
     print('Finish loading data')
-    gdrive_rpath = './experiments_buffer'
+    gdrive_rpath = './experiments'
 
     t = int(time.time())
     log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
@@ -172,7 +181,7 @@ def run():
         save_weights_only=True,
         monitor=MONITOR,
         mode='max',
-        save_best_only=False,
+        save_best_only=True,
         verbose=1)
 
     model = build_model(x_train.shape[1], y_train.shape[1], MODEL, args)
@@ -206,9 +215,9 @@ def run():
                                               out_of_class=OUT_OF_CLASS,
                                               manifold_mixup=MANIFOLD_MIXUP)
 
-    validation_generator = mixup.data_generator(x_val,
-                                                y_val,
-                                                batch_size=x_val.shape[0],
+    validation_generator = mixup.data_generator(x_val_with_ood,
+                                                y_val_with_ood,
+                                                batch_size=x_val_with_ood.shape[0],
                                                 n_channels=N_CHANNELS,
                                                 shuffle=False,
                                                 mixup_scheme='none',
@@ -227,7 +236,7 @@ def run():
     if N_OOD>0:
         in_out_test_generator = mixup.data_generator(x_test_with_ood,
                                           y_test_with_ood,
-                                          batch_size=x_test.shape[0],
+                                          batch_size=x_test_with_ood.shape[0],
                                           n_channels=N_CHANNELS,
                                           shuffle=True,
                                           mixup_scheme='none',
@@ -250,11 +259,13 @@ def run():
                                                  training_generator.x.shape[1],
                                                  x=training_generator.x)
     ## training ##
+    t_train_start = int(time.time())
     training_history = model.fit(x=training_generator,
                                  validation_data=validation_generator,
                                  epochs=EPOCHS,
                                  callbacks=callbacks)
-
+    t_train_end = int(time.time())
+    used_time = t_train_end - t_train_start
     model.load_weights(checkpoint_filepath)
     # model.save(model_path)
     print('Tensorboard callback directory: {}'.format(log_dir))
@@ -262,12 +273,28 @@ def run():
     ood_loss = 0
     metric_file = os.path.join(gdrive_rpath, 'results.txt')
     loss = model.evaluate(test_generator, return_dict=True)
-    if N_OOD>0:
+    #if N_OOD>0:
+    #    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
+    #with open(metric_file, "a+") as f:
+    #    f.write(f"{MODEL}, {DATASET}, {t}, {loss['acc_with_ood']:.3f}," \
+    #            f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+    #            f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
+    if args.ood:
         ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
-    with open(metric_file, "a+") as f:
-        f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
-                f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
+        with open(metric_file, "a+") as f:
+            f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+                    f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+                    f"{ood_loss['accuracy']:.3f}, {ood_loss['loss']:.3f}," \
+                    f"{ood_loss['ece_metrics']:.3f}, {ood_loss['oe_metrics']:.3f},"
+                    f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}, {used_time}\n")
+    else:
+        with open(metric_file, "a+") as f:
+            f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+                    f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+                    f"None, None," \
+                    f"None, None,"
+                    f"{loss['loss']:.3f}, {n_ood}, None, {used_time}\n")
+
 
     arg_file = os.path.join(log_dir, 'args.txt')
     with open(arg_file, "w+") as f:
