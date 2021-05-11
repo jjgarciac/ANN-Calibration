@@ -168,7 +168,7 @@ def load(dname='abalone',
   if dname == 'abalone':
       url = "{}/{}/{}.data".format(url, dname, dname)
       data = pd.read_csv(url, 
-                          header=None, 
+                          header=None,
                           names=['Sex', 'Length', 'Diameter', 'Height', 'Whole weight', 'Shucked weight', 'Viscera weight', 'Shell weight','Rings'])
   
       return {
@@ -216,7 +216,7 @@ def load(dname='abalone',
               }
 
   if dname == 'arrhythmia':
-      data = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/arrhythmia/arrhythmia.data", 
+      data = pd.read_csv("{}/arrhythmia/arrhythmia.data".format(url),
                           header=None
                         )
       return {
@@ -225,7 +225,7 @@ def load(dname='abalone',
       }
       
   if dname == 'iris':
-      data = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data',
+      data = pd.read_csv('{}/iris/iris.data'.format(url),
                           header=None,
                           names=['sepal length', 'sepal width', 'petal length', 'petal width', 'class'])
       
@@ -335,7 +335,7 @@ def prepare_inputs(x_train, x_test=None):
     
   if x_test is not None:
     x_train_features = pd.concat(train_features, axis=1).values
-    x_test_features = pd.concat(train_features, axis=1).values
+    x_test_features = pd.concat(test_features, axis=1).values
     x_features = np.concatenate((x_train_features, x_test_features), axis=0)
     Normalizer = MinMaxScaler((-1, 1))
     Normalizer.fit(x_features)

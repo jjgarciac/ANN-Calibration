@@ -1,22 +1,28 @@
 import os
 
-datasets = ['sensorless_drive',
-            'segment',
-            #'htru2',
-            'heart',
-            'mushroom',
-            'wine',
-            'arrhythmia',
+datasets = [
             'iris',
-            #'phishing',
-            #'moon',
-'abalone',
-]
+            'heart',
+            'arrhythmia',
+            'abalone',
+            'wine',
+            'segment',
+            'sensorless_drive',
+            ]
 
 manifolds = ['true', ]
-model = ['none', ]
+model = ['manifold_mixup']
 
-for i_m in model:
+
+for i_d in datasets:
+    print('Current Method: ' + 'random' + ', Current dataset: ' + i_d + '.\n')
+    os.system('python main_merged.py --dataset ' + str(i_d) + ' --model ann --mixup_scheme random --epochs 300 --n_ood 1 --buffer_in False, --buffer_out False')
+
+
+'''
+for i_m in manifolds:
     for i_d in datasets:
-        print('Current Method: ' + i_m + ', Current dataset: ' + i_d + '.\n')
-        os.system('python main_ood.py --dataset ' + str(i_d) + ' --mixup_scheme ' + i_m + ' --epochs 100 --n_ood 1')
+        print('Current Method: ' + str('manifold_mix_up') + ', Current dataset: ' + i_d + '.\n')
+        os.system('python main_merged.py --dataset ' + str(i_d) + ' --manifold_mixup --epochs 300 --n_ood 1')
+'''
+

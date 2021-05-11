@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 import argparse
 import os
 import numpy as np
@@ -24,7 +27,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description='CLI Options',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # Dataset parameters
-    parser.add_argument("--dataset", default="iris",
+    parser.add_argument("--dataset", default="segment",
                         help="name of dataset: abalone, arcene, arrhythmia, iris, \
                           phishing, moon, sensorless_drive, segment,\
                           htru2, heart disease, mushroom, wine, \
@@ -45,7 +48,7 @@ def build_parser():
     # Training Dataset parameters
     parser.add_argument("--batch_size", default=16, type=int,
                         help="batch size used for training")
-    parser.add_argument("--epochs", default=100, type=int,
+    parser.add_argument("--epochs", default=1, type=int,
                         help="number of epochs used for training")
     parser.add_argument("--shuffle", default='true', type=str,
                         help="shuffle after each epoch")
@@ -122,7 +125,8 @@ def run():
         x_train, x_test, y_train, y_test = train_test_split(x,
                                                             y,
                                                             train_size=TRAIN_TEST_RATIO,
-                                                            stratify=y if stratify else None)
+                                                            stratify=y if stratify else None,
+                                                            random_state=0)
 
     else:
         if DATASET == 'moon' or DATASET == 'toy_Story' or DATASET == 'toy_Story_ood':
@@ -136,7 +140,8 @@ def run():
     x_train, x_val, y_train, y_val = train_test_split(x_train,
                                                       y_train,
                                                       train_size=TRAIN_TEST_RATIO,
-                                                      stratify=y_train if stratify else None)
+                                                      stratify=y_train if stratify else None,
+                                                      random_state=0)
 
     x_train = x_train.astype(np.float32)
     x_val = x_val.astype(np.float32)
@@ -150,7 +155,7 @@ def run():
         x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
         #x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
         #y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
-        x_ood_val, x_ood_test, y_ood_val, y_ood_test = train_test_split(x_ood, y_ood, test_size=0.5)
+        x_ood_val, x_ood_test, y_ood_val, y_ood_test = train_test_split(x_ood, y_ood, test_size=0.5, random_state=0)
         x_test_with_ood = np.concatenate([x_test, x_ood_test], axis=0)
         y_test_with_ood = np.concatenate([y_test, y_ood_test], axis=0)
         x_val_with_ood = np.concatenate([x_val, x_ood_val], axis=0)
@@ -158,7 +163,7 @@ def run():
 
 
     print('Finish loading data')
-    gdrive_rpath = './experiments'
+    gdrive_rpath = './experiments_511'
 
     t = int(time.time())
     log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
@@ -279,21 +284,21 @@ def run():
     #    f.write(f"{MODEL}, {DATASET}, {t}, {loss['acc_with_ood']:.3f}," \
     #            f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
     #            f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
-    if args.ood:
+    if N_OOD > 0:
         ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
         with open(metric_file, "a+") as f:
-            f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+            f.write(f"{MODEL}, {MIXUP_SCHEME}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                     f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                    f"{ood_loss['accuracy']:.3f}, {ood_loss['loss']:.3f}," \
+                    f"{ood_loss['accuracy']:.3f}," \
                     f"{ood_loss['ece_metrics']:.3f}, {ood_loss['oe_metrics']:.3f},"
-                    f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}, {used_time}\n")
+                    f"{n_ood}, {ood_loss['auc_of_ood']}, {used_time}\n")
     else:
         with open(metric_file, "a+") as f:
-            f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+            f.write(f"{MODEL}, {MIXUP_SCHEME}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                     f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                    f"None, None," \
+                    f"None, " \
                     f"None, None,"
-                    f"{loss['loss']:.3f}, {n_ood}, None, {used_time}\n")
+                    f"{n_ood}, None, {used_time}\n")
 
 
     arg_file = os.path.join(log_dir, 'args.txt')

@@ -90,7 +90,7 @@ class JEHM(keras.Model):
         if self.with_buffer_in:
             init_samples, buffer_inds = self.sample_p_0(self.replay_buffer_in, bs=bs, feat_size=feat_size)
         else:
-            init_samples = Uniform(-1, 1).sample(bs) #?
+            init_samples = Uniform(-1, 1).sample(bs, feat_size) #?
 
         xk = tf.Variable(init_samples)
         for i in range(self.ld_n):

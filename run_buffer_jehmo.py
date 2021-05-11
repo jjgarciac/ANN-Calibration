@@ -3,12 +3,11 @@ import os
 datasets = [
             'iris',
             'heart',
-            'mushroom',
-            'wine',
             'arrhythmia',
             'abalone',
-            #'sensorless_drive',
+            'wine',
             'segment',
+            'sensorless_drive',
             ]
 
 model = ['jehmo', ]
