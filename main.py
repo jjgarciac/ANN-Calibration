@@ -11,6 +11,8 @@ import utils
 import data_loader, mixup
 from models import build_model
 import tensorflow as tf
+from utils import *
+
 tf.executing_eagerly()
 
 def build_parser():
@@ -21,7 +23,7 @@ def build_parser():
                   help="name of dataset: abalone, arcene, arrhythmia, iris, \
                           phishing, moon, sensorless_drive, segment,\
                           htru2, heart disease, mushroom, wine, \
-                          toy_Story, toy_Story_ood, mnist, kmnist, \
+                          toy_story, toy_Story_ood, mnist, kmnist, \
                           cifar10, svhn")
   parser.add_argument("--n_train", default=10000, type=int,
                   help="training data points for moon dataset")
@@ -105,7 +107,7 @@ def run():
   stratify = DATASET not in ["abalone", "segment"]
   images = DATASET in {'mnist', 'cifar10', 'svhn', 'f-mnist'}
 
-  if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
+  if DATASET not in ['arcene', 'moon', 'toy_story', 'toy_story_ood', 'segment']:
     x = data['features']
     if not images:
       x = data_loader.prepare_inputs(data['features'])
@@ -116,7 +118,7 @@ def run():
                                                         stratify=y if stratify else None)
     
   else:
-    if DATASET == 'moon' or DATASET=='toy_Story' or DATASET=='toy_Story_ood':
+    if DATASET == 'moon' or DATASET=='toy_story' or DATASET=='toy_story_ood':
       x_train, x_test = data['x_train'], data['x_val']
     else:
       x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])
@@ -256,6 +258,9 @@ def run():
   model.load_weights(checkpoint_filepath)
   #model.save(model_path)
   print('Tensorboard callback directory: {}'.format(log_dir))
+  arg_file = os.path.join(log_dir, 'args.txt')
+  with open(arg_file, "w+") as f:
+    f.write(str(args))
   
   metric_file = os.path.join(gdrive_rpath, 'results.txt')
   loss = model.evaluate(test_generator, return_dict=True)
@@ -264,11 +269,18 @@ def run():
     with open(metric_file, "a+") as f:
         f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
                 f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
-                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")  
-  
-  arg_file = os.path.join(log_dir, 'args.txt')
-  with open(arg_file, "w+") as f:
-    f.write(str(args))
+                f"{ood_loss['accuracy']:.3f}, {ood_loss['loss']:.3f},"\
+                f"{ood_loss['ece_metrics']:.3f}, {ood_loss['oe_metrics']:.3f},"\
+                f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']},"\
+                f"{args.train_test_ratio}\n")  
+  else:
+    with open(metric_file, "a+") as f:
+        f.write(f"{MODEL}, {DATASET}, {t}, {loss['accuracy']:.3f}," \
+                f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
+                f"None, None,"\
+                f"None, None,"
+                f"{loss['loss']:.3f}, None\n")  
+
 
 if __name__ == "__main__":
   parser = build_parser()

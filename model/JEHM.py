@@ -31,7 +31,6 @@ class JEHM(keras.Model):
         # p(x) sampler parameters
         self.ld_lr=ld_lr
         self.ld_n=ld_n
-        print(f"Samples: {self.ld_n}")
         self.ld_std=ld_std
         # Control parameters
         self.n_epochs=0
@@ -68,15 +67,10 @@ class JEHM(keras.Model):
         loss = 0
         max_val = tf.math.reduce_max(x, axis=0)
         min_val = tf.math.reduce_min(x, axis=0)
-        
+        #max_val = 5
+        #min_val = -5
+        #xk = self.sample_q([x.shape[0], x.shape[1]], min_val, max_val)
         xk = self.sample_q(x.shape[0], min_val, max_val)
-
-        if self.n_epochs > self.n_warmup and self.ood:
-            ood_x = self.sample_ood(x)
-            ood_z = self(ood_x)
-            ood_entropy = self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-                tf.ones(y.shape)*1/y.shape[1], ood_z))
-            loss += ood_entropy
 
         with tf.GradientTape() as g2:
             z = self(x)
@@ -87,6 +81,12 @@ class JEHM(keras.Model):
             lg_a2 = tf.reduce_logsumexp(zk, axis=1, keepdims=True)
             e2 = tf.reduce_sum(tf.exp(zk - lg_a2)*(lg_a2-zk), axis=1, keepdims=True)
             loss += tf.reduce_mean(e1) - tf.reduce_mean(e2)
+            if self.n_epochs > self.n_warmup and self.ood:
+                ood_x = self.sample_ood(x)
+                ood_z = self(ood_x)
+                ood_entropy = self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                    tf.ones(y.shape)*1/y.shape[1], ood_z))
+                loss += ood_entropy
 
         loss_grads = g2.gradient(loss, self.trainable_weights) 
         self.optimizer.apply_gradients(zip(loss_grads, self.trainable_weights))

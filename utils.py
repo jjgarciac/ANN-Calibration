@@ -44,7 +44,7 @@ def prepare_ood(x_train, x_val, x_test, y_train, y_val, y_test, n_ood, norm):
     return x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood
 
 def update_n_ood(data, DATASET, N_OOD):
-    if DATASET not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
+    if DATASET not in ['arcene', 'moon', 'toy_story', 'toy_story_ood', 'segment']:
         print(DATASET)
         y = data['labels']
         # check whether the choice of N_OOD is reasonable

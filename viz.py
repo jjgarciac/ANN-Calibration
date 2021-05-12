@@ -73,7 +73,7 @@ def load_data(args):
                           train_noise=args.train_noise,
                           test_noise=args.test_noise)
     stratify = args.dataset not in ["abalone", "segment"]
-    if args.dataset not in ['arcene', 'moon', 'toy_Story', 'toy_Story_ood', 'segment']:
+    if args.dataset not in ['arcene', 'moon', 'toy_story', 'toy_story_ood', 'segment']:
         print(args.dataset)
         x = data_loader.prepare_inputs(data['features'])
         y = data['labels']
@@ -82,8 +82,8 @@ def load_data(args):
                                                             train_size=args.train_test_ratio,
                                                         stratify=y if stratify else None)
     else:
-        if args.dataset == 'moon' or args.dataset=='toy_Story' or \
-           args.dataset=='toy_Story_ood':
+        if args.dataset == 'moon' or args.dataset=='toy_story' or \
+           args.dataset=='toy_story_ood':
             x_train, x_test = data['x_train'], data['x_val']
         else:
             x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])

@@ -262,7 +262,7 @@ def load(dname='abalone',
             'y_val':y_test,
            }
 
-  if dname == 'toy_Story':
+  if dname == 'toy_story':
     x_train, y_train = make_toy_Story(int(n_train/5)+1)
     y_train = y_train.reshape(-1,1)
     enc = OneHotEncoder(sparse=False).fit(y_train)
