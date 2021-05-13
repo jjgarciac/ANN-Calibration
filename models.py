@@ -26,8 +26,10 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     #p_x = tf.reduce_logsumexp(z, axis=1, keepdims=True)
     #outputs = p_x*z
 
-    model = JEM.JEM(args.barch_size, args.reinit_freq, args.ld_lr, args.ld_std, args.ld_n, False, args.od_n,
-            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
+    model = JEM.JEM(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n,
+                      args.od_lr, args.od_std, args.od_l, args.n_warmup,
+                      buffer_size=args.buffer_size,
+                      inputs=inputs, outputs=outputs)
   
   elif model=='jehm':
     inputs = keras.Input(shape=(in_shape,))
@@ -65,8 +67,10 @@ def build_model(in_shape, out_shape, model='ann', args=None):
     x = Dense(128, activation="sigmoid")(inputs)
     x = Dense(128, activation="sigmoid")(x)
     outputs = Dense(out_shape)(x)
-    model = JEM.JEM(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n, 
-            args.od_lr, args.od_std, args.od_l, args.n_warmup, inputs=inputs, outputs=outputs)
+    model = JEM.JEM(args.ld_lr, args.ld_std, args.ld_n, True, args.od_n,
+                      args.od_lr, args.od_std, args.od_l, args.n_warmup,
+                      buffer_size=args.buffer_size,
+                      inputs=inputs, outputs=outputs)
   
   elif model=='ann':
     model = tfk.Sequential([
@@ -77,7 +81,7 @@ def build_model(in_shape, out_shape, model='ann', args=None):
   else:
       raise AssertionError
   
-  optimizer = tfk.optimizers.Adam()
+  optimizer = tfk.optimizers.Adam(learning_rate=3e-4)
   loss = tfk.losses.CategoricalCrossentropy(from_logits=True)
 
   metrics = [ECE_metrics(name='ECE', num_of_bins=10),

@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 import argparse
 import os
 import numpy as np
@@ -19,8 +18,9 @@ from model.buffer import *
 tf.executing_eagerly()
 
 from numpy.random import seed
+
 seed(1)
-tf.random.set_seed(2) #set3set_random_seed(2)
+tf.random.set_seed(2)  # set3set_random_seed(2)
 
 
 def build_parser():
@@ -54,7 +54,7 @@ def build_parser():
                         help="shuffle after each epoch")
     parser.add_argument("--monitor", default='val_sum__detc__cls', type=str,
                         help="Metric to monitor")
-    parser.add_argument("--ood", action='store_true',default=1,
+    parser.add_argument("--ood", action='store_true', default=1,
                         help="use ood samples if available on dataset.")
 
     # Model parameters
@@ -135,7 +135,6 @@ def run():
             x_train, x_test = data_loader.prepare_inputs(data['x_train'], data['x_val'])
         y_train, y_test = data['y_train'], data['y_val']
 
-        
     # Generate validation split
     x_train, x_val, y_train, y_val = train_test_split(x_train,
                                                       y_train,
@@ -147,23 +146,23 @@ def run():
     x_val = x_val.astype(np.float32)
     x_test = x_test.astype(np.float32)
 
-    if 'N_OOD' in globals() and N_OOD >=1:
+    if 'N_OOD' in globals() and N_OOD >= 1:
         n_ood = update_n_ood(data, DATASET, N_OOD)
-        n_ood = y_val.shape[1]-n_ood-1
+        n_ood = y_val.shape[1] - n_ood - 1
         print("Number of ood classes: {n_ood}")
         x_train, x_val, x_test, y_train, y_val, y_test, x_ood, y_ood = prepare_ood(
-        x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
-        #x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
-        #y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
+            x_train, x_val, x_test, y_train, y_val, y_test, n_ood, NORM)
+        # x_test_with_ood = np.concatenate([x_test, x_ood], axis=0)
+        # y_test_with_ood = np.concatenate([y_test, y_ood], axis=0)
         x_ood_val, x_ood_test, y_ood_val, y_ood_test = train_test_split(x_ood, y_ood, test_size=0.5, random_state=0)
         x_test_with_ood = np.concatenate([x_test, x_ood_test], axis=0)
         y_test_with_ood = np.concatenate([y_test, y_ood_test], axis=0)
         x_val_with_ood = np.concatenate([x_val, x_ood_val], axis=0)
         y_val_with_ood = np.concatenate([y_val, y_ood_val], axis=0)
-
-
+    else:
+        n_ood = 0
     print('Finish loading data')
-    gdrive_rpath = './experiments_13'
+    gdrive_rpath = './experiments_all'
 
     t = int(time.time())
     log_dir = os.path.join(gdrive_rpath, MODEL_NAME, '{}'.format(t))
@@ -220,9 +219,9 @@ def run():
                                               out_of_class=OUT_OF_CLASS,
                                               manifold_mixup=MANIFOLD_MIXUP)
 
-    validation_generator = mixup.data_generator(x_val_with_ood,
-                                                y_val_with_ood,
-                                                batch_size=x_val_with_ood.shape[0],
+    validation_generator = mixup.data_generator(x_val,
+                                                y_val,
+                                                batch_size=x_val.shape[0],
                                                 n_channels=N_CHANNELS,
                                                 shuffle=False,
                                                 mixup_scheme='none',
@@ -238,15 +237,15 @@ def run():
                                           alpha=0,
                                           manifold_mixup=MANIFOLD_MIXUP)
 
-    if N_OOD>0:
+    if N_OOD > 0:
         in_out_test_generator = mixup.data_generator(x_test_with_ood,
-                                          y_test_with_ood,
-                                          batch_size=x_test_with_ood.shape[0],
-                                          n_channels=N_CHANNELS,
-                                          shuffle=True,
-                                          mixup_scheme='none',
-                                          alpha=0,
-                                          manifold_mixup=MANIFOLD_MIXUP)
+                                                     y_test_with_ood,
+                                                     batch_size=x_test_with_ood.shape[0],
+                                                     n_channels=N_CHANNELS,
+                                                     shuffle=True,
+                                                     mixup_scheme='none',
+                                                     alpha=0,
+                                                     manifold_mixup=MANIFOLD_MIXUP)
 
     callbacks = [tensorboard_callback, model_cp_callback]
     if DATASET == 'Toy_story' or DATASET == 'Toy_story_ood':
@@ -255,7 +254,6 @@ def run():
         callbacks += [border_callback]
     if MODEL in ['jem', 'jemo', 'jehm', 'jehmo', 'jehmo_mix']:
         callbacks += [cb.jem_n_epochs()]
-
 
     ## buffer ##
     '''
@@ -280,9 +278,9 @@ def run():
     ood_loss = 0
     metric_file = os.path.join(gdrive_rpath, 'results.txt')
     loss = model.evaluate(test_generator, return_dict=True)
-    #if N_OOD>0:
+    # if N_OOD>0:
     #    ood_loss = model.evaluate(in_out_test_generator, return_dict=True)
-    #with open(metric_file, "a+") as f:
+    # with open(metric_file, "a+") as f:
     #    f.write(f"{MODEL}, {DATASET}, {t}, {loss['acc_with_ood']:.3f}," \
     #            f"{loss['ece_metrics']:.3f}, {loss['oe_metrics']:.3f}," \
     #            f"{loss['loss']:.3f}, {n_ood}, {ood_loss['auc_of_ood']}\n")
@@ -301,7 +299,6 @@ def run():
                     f"None, " \
                     f"None, None,"
                     f"{n_ood}, None, {used_time}\n")
-
 
     arg_file = os.path.join(log_dir, 'args.txt')
     with open(arg_file, "w+") as f:

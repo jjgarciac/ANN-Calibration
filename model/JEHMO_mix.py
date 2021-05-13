@@ -57,10 +57,8 @@ class JEHMO_mix(keras.Model):
 
         if self.with_buffer_out:
             init_samples, buffer_inds = self.sample_p_0_out(self.replay_buffer_out, x)
-            #init_samples, buffer_inds = self.sample_p_0(self.replay_buffer_in, bs=x.shape[0], feat_size=x.shape[1])
         else:
             init_samples = x
-            #init_samples = Uniform(-1, 1).sample(x.shape[0])
 
         ood_x = tf.Variable(init_samples)
         for i in range(self.od_n):
@@ -156,14 +154,15 @@ class JEHMO_mix(keras.Model):
         loss = 0
         #max_val = tf.math.reduce_max(x, axis=0)
         #min_val = tf.math.reduce_min(x, axis=0)
+        '''
         if (not hasattr(self, 'replay_buffer_in')) and self.with_buffer_in:
                 self.replay_buffer_in = get_buffer(self.buffer_size, x.shape[1])
-        '''
+        
         if (not hasattr(self, 'replay_buffer_out')) and self.with_buffer_out:
                 self.replay_buffer_out = get_buffer(self.buffer_size, x.shape[1])
         '''
         xk = self.sample_q(x.shape[0], x.shape[1])
-
+        '''
         if self.n_epochs > self.n_warmup and self.ood:
             ood_x  = self.sample_ood(x)
             mixed_x, mixed_y = self.mix_up(x, ood_x, y)
@@ -176,7 +175,7 @@ class JEHMO_mix(keras.Model):
             ood_entropy += self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
                 tf.ones(y.shape) * 1 / y.shape[1], ood_z))
             loss += ood_entropy
-
+        '''
 
         with tf.GradientTape() as g2:
 
@@ -188,6 +187,19 @@ class JEHMO_mix(keras.Model):
             lg_a2 = tf.reduce_logsumexp(zk, axis=1, keepdims=True)
             e2 = tf.reduce_sum(tf.exp(zk - lg_a2)*(lg_a2-zk), axis=1, keepdims=True)
             loss += (tf.reduce_mean(e1) - tf.reduce_mean(e2))
+
+            if self.n_epochs > self.n_warmup and self.ood:
+                ood_x = self.sample_ood(x)
+                mixed_x, mixed_y = self.mix_up(x, ood_x, y)
+                # mix
+                ood_mixed_z = self(mixed_x)
+                ood_entropy = self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                    mixed_y, ood_mixed_z))
+                # ood
+                ood_z = self(ood_x)
+                ood_entropy += self.od_l * tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                    tf.ones(y.shape) * 1 / y.shape[1], ood_z))
+                loss += ood_entropy
 
 
         loss_grads = g2.gradient(loss, self.trainable_weights)

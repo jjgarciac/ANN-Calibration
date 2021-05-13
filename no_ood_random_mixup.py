@@ -16,9 +16,9 @@ model = ['manifold_mixup']
 
 for i_d in datasets:
     print('Current Method: ' + 'random' + ', Current dataset: ' + i_d + '.\n')
-    os.system('python main_merged.py --dataset ' + str(i_d) +
+    os.system('python main_no_ood.py --dataset ' + str(i_d) +
               ' --model ann --mixup_scheme random'
-              ' --batch_size 64 --epochs 500 --n_ood 1'
+              ' --batch_size 64 --epochs 500 --n_ood 0'
               ' --buffer_in False --buffer_out False')
 
 

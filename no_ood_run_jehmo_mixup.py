@@ -10,13 +10,13 @@ datasets = [
             #'sensorless_drive',
             ]
 
-#model = ['jehmo', ]
-mix = ['none', 'random']
+model = ['jehmo', ]
+mix = ['none', ]
 
 for i_mix in mix:
     for i_d in datasets:
-        print('Current Method: ' + str('jehmo_mix') + ', Current dataset: ' + i_d + '.\n')
-        os.system('python main_merged.py --dataset ' + str(i_d) +
+        print('Current Method: ' + str('jehmo_mixup') + ', Current dataset: ' + i_d + '.\n')
+        os.system('python main_no_ood.py --dataset ' + str(i_d) +
                   ' --model jehmo_mix --mixup_scheme ' + i_mix +
                   ' --batch_size 64 --epochs 500 --n_warmup 50'
-                  ' --od_l 4.9 --od_lr 1.7 --od_n 20 --od_std .2 --n_ood 1')
+                  ' --od_l 4.9 --od_lr 1.7 --od_n 20 --od_std .2 --n_ood 0')

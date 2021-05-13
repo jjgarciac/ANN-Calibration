@@ -4,6 +4,13 @@
     <list>
       <list>
         <remote-mappings server-id="python@sftp://jyn@biag-lambda2.cs.unc.edu:22/home/jyn/miniconda3/bin/python3.6" />
+        <remote-mappings server-id="python@sftp://jyn@biag-lambda1.cs.unc.edu:22/home/jyn/miniconda3/bin/python3.6">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$" remote-root="/home/jyn/tabular/ANN-Calibration" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>
