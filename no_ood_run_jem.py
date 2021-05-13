@@ -1,5 +1,6 @@
 import os
 
+'''
 datasets = [
             'iris',
             'heart',
@@ -9,9 +10,17 @@ datasets = [
             'segment',
             #'sensorless_drive',
             ]
+'''
+
+datasets = ['phishing',
+           'moon',
+           'htru2',
+           'mushroom',
+           'arcene',
+           'abalone', ]
 
 #model = ['jehmo', ]
-mix = ['none', 'random']
+mix = ['none', ]
 
 for i_mix in mix:
     for i_d in datasets:

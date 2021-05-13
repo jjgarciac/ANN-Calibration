@@ -1,5 +1,5 @@
 import os
-
+'''
 datasets = [
             'iris',
             'heart',
@@ -9,6 +9,13 @@ datasets = [
             'segment',
             #'sensorless_drive',
             ]
+'''
+datasets = ['phishing',
+           'moon',
+           'htru2',
+           'mushroom',
+           'arcene',
+           'abalone', ]
 
 manifolds = ['true', ]
 model = ['manifold_mixup']
